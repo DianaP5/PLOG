@@ -24,7 +24,7 @@ display_board([L1|Ls]):-
         div(Ls, A, B),
         display_top_border,
         display_top_board([L1|A], 0),
-        display_bottom_board(B, 6).
+        display_bottom_board(B, 5).
 
 /***    Display Top Half Board   ***/
 
@@ -56,14 +56,14 @@ display_bottom_board([L1|Ls], Aux):-
         display_bottom_board(Ls, Aux1).
 
 /***    Display Top Line   ***/
-display_top_line([], Aux):- translate(Aux, S), write(S),nl.
+display_top_line([]):- nl.
 
-display_top_line([E|Es], Aux):-
+display_top_line([E|Es]):-
         translate(E,V),
         write('/'),
         write(V),
         write(''\'_'),
-        display_top_line(Es, Aux).
+        display_top_line(Es).
 
 
 
