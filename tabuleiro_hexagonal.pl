@@ -12,7 +12,7 @@ board(  [[s, s, s, s, s],
 [s, s, s, s, s]]).
 
 
-ver:-board(T), display_board(T).
+play_game:-board(T), display_board(T).
 
 
 /***************        Board Visualization          ******************/
@@ -50,8 +50,8 @@ display_bottom_board([L1|Ls], Aux):-
         S is S_max-S_list,
         write(Aux),
         write('|'),
-        display_spaces(S),
         Aux1 is Aux+1,
+        display_spaces(S),
         display_bottom_line(L1),
         display_bottom_board(Ls, Aux1).
 
@@ -121,10 +121,5 @@ translate(s, ' ').
 translate(w, 'o').
 %black
 translate(b, '*').
-translate(11, 'F').
-translate(12, 'G').
-translate(13, 'H').
-translate(14, 'I').
-translate(15, 'J').
 
 
