@@ -93,7 +93,7 @@ display_spaces(S):-
 
 /***    Display Top Border   ***/
 display_top_border:-
-        write('   A B C D E___F___G___H___I J K L M'), nl.
+        write('   A B C D E_F_G_H_I_J_K_L_M N O P Q'), nl.
 
 
 /***    Display Bottom Border   ***/
