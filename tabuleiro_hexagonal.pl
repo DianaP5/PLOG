@@ -1,15 +1,15 @@
 /*Yavalath's board*/
          
 /***************        Board Representation          ******************/
-board(  [[s, s, s, s, s],
+board(  [[s, s, b, s, s],
 [s, s, s, s, s, s],
 [s, s, s, s, s, s, s],
 [s, s, s, s, s, s, s, s],
-[s, s, s, s, s, s, s, s, s],
-[s, s, s, s, s, s, s, s],
+[b, b, b, b, b, b, w, w, w],
+[s, s, w, b, s, s, s, s],
 [s, s, s, s, s, s, s],
 [s, s, s, s, s, s],
-[s, s, s, s, s]]).
+[s, s, s, s, b]]).
 
 
 play_game:-board(T), display_board(T).
@@ -22,60 +22,109 @@ display_board([]):-nl.
 
 display_board([L1|Ls]):-
         div(Ls, A, B),
-        display_top_border,
-        display_top_board([L1|A], 0),
-        display_bottom_board(B, 5).
-
-/***    Display Top Half Board   ***/
-
-display_top_board([], Aux).
-display_top_board([L1|Ls], Aux):-
         S_max is 9,
         length(L1, S_list),
         S is S_max-S_list,
-        write(Aux),
-        write('|'),
-        Aux1 is Aux+1,
-        display_spaces(S),
+        display_spaces(S+1),
+        display_first_line(L1),
+        display_top_board([L1|A]),
+        display_bottom_board(B).
+
+/***    Display Top Half Board   ***/
+
+display_top_board([Ls]):- 
+        S_max is 9,
+        length(Ls, S_list),
+        S is S_max-S_list,
+        display_spaces(S+1),
+        display_top_line(Ls),
+        display_spaces(S+1),
+        display_char_line_bottom(Ls),
+        display_spaces(S+1),
+        display_bottom_line(Ls).
+
+
+display_top_board([L1|Ls]):-
+        S_max is 9,
+        length(L1, S_list),
+        S is S_max-S_list,
+        display_spaces(S+1),
         display_top_line(L1),
-        display_top_board(Ls, Aux1).
+        display_spaces(S),
+        display_char_line_top(L1),
+        display_top_board(Ls).
+
 
 
 /***    Display Bottom Half Board   ***/
-display_bottom_board([], Aux):-write('9|'),
-        display_last_line.
-display_bottom_board([L1|Ls], Aux):-
-        S_max is 8,
+
+display_bottom_board([]):- nl.
+display_bottom_board([L1|Ls]):-
+        S_max is 9,
         length(L1, S_list),
         S is S_max-S_list,
-        write(Aux),
-        write('|'),
-        Aux1 is Aux+1,
-        display_spaces(S),
+        display_spaces(S+1),
+        display_char_line_bottom(L1),
+        display_spaces(S+1),
         display_bottom_line(L1),
-        display_bottom_board(Ls, Aux1).
+        display_bottom_board(Ls).
 
-/***    Display Top Line   ***/
-display_top_line([]):- nl.
+
+/***    Display First Line of Board  ***/
+display_first_line([E]):-
+        write(' ___'), nl.
+
+display_first_line([E|Es]):-
+        write(' ___    '),
+        display_first_line(Es).
+        
+
+/* Display Top Line */
+display_top_line([E]):-
+        write('/   '\''), nl.
 
 display_top_line([E|Es]):-
-        translate(E,V),
-        write('/'),
-        write(V),
-        write(''\'_'),
+        write('/   '\'___'),
         display_top_line(Es).
+
+
+/* Display Char line Top */
+
+display_char_line_top([]):- 
+        write(' ___'), nl.
+
+display_char_line_top([E|Es]):-
+        translate(E, V),
+        write(' ___  '),
+        write(V),
+        write(' '),
+        display_char_line_top(Es).
 
 
 
 /***    Display Bottom Line   ***/
-display_bottom_line([]):- write(''\'_/'),nl.
+display_bottom_line([]):- nl.
 
 display_bottom_line([E|Es]):-
-        translate(E, V),
-        write(''\'_'),
-        write('/'),
-        write(V),
+        write(''\'___'),
+        write('/   '),
         display_bottom_line(Es).
+
+
+/* Display Char line Bottom */
+
+display_char_line_bottom([E]):- 
+        translate(E, V),
+        write('  '),
+        write(V),
+        write('  '), nl.
+
+display_char_line_bottom([E|Es]):-
+        translate(E, V),
+        write('  '),
+        write(V),
+        write('  ___'),
+        display_char_line_bottom(Es).
 
 
 
@@ -85,22 +134,9 @@ display_spaces(0).
 %S -> size of list
 display_spaces(S):-
         S>0,
-        write('--'),
+        write('    '),
         S1 is S-1,
         display_spaces(S1).
-
-
-
-/***    Display Top Border   ***/
-display_top_border:-
-        write('   A B C D E_F_G_H_I_J_K_L_M N O P Q'), nl.
-
-
-/***    Display Bottom Border   ***/
-display_last_line:-
-        display_spaces(4),
-        write(''\'_/_'\'_/_'\'_/_'\'_/_'\'_/').
-
 
 
            
@@ -112,7 +148,6 @@ split(B, [], [], B).
 
 split([H|T], [_, _|T1], [H | T2], B) :-
     split(T, T1, T2, B).
-
 
 
 /* Translates*/
