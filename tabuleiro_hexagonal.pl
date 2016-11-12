@@ -1,15 +1,15 @@
 /*Yavalath's board*/
          
 /***************        Board Representation          ******************/
-board(  [[s, s, b, s, s],
+board(  [[s, s, s, s, s],
 [s, s, s, s, s, s],
 [s, s, s, s, s, s, s],
 [s, s, s, s, s, s, s, s],
-[b, b, b, b, b, b, w, w, w],
-[s, s, w, b, s, s, s, s],
+[s, s, s, s, s, s, s, s, s],
+[s, s, s, s, s, s, s, s],
 [s, s, s, s, s, s, s],
 [s, s, s, s, s, s],
-[s, s, s, s, b]]).
+[s, s, s, s, s]]).
 
 
 play_game:-board(T), display_board(T).
@@ -21,19 +21,18 @@ play_game:-board(T), display_board(T).
 display_board([]):-nl.
 
 display_board([L1|Ls]):-
+        get_max_size([L1|Ls], S_max, 0),
         div(Ls, A, B),
-        S_max is 9,
         length(L1, S_list),
         S is S_max-S_list,
         display_spaces(S+1),
         display_first_line(L1),
-        display_top_board([L1|A]),
-        display_bottom_board(B).
+        display_top_board([L1|A], S_max),
+        display_bottom_board(B, S_max).
 
 /***    Display Top Half Board   ***/
 
-display_top_board([Ls]):- 
-        S_max is 9,
+display_top_board([Ls], S_max):- 
         length(Ls, S_list),
         S is S_max-S_list,
         display_spaces(S+1),
@@ -44,30 +43,28 @@ display_top_board([Ls]):-
         display_bottom_line(Ls).
 
 
-display_top_board([L1|Ls]):-
-        S_max is 9,
+display_top_board([L1|Ls], S_max):-
         length(L1, S_list),
         S is S_max-S_list,
         display_spaces(S+1),
         display_top_line(L1),
         display_spaces(S),
         display_char_line_top(L1),
-        display_top_board(Ls).
+        display_top_board(Ls, S_max).
 
 
 
 /***    Display Bottom Half Board   ***/
 
-display_bottom_board([]):- nl.
-display_bottom_board([L1|Ls]):-
-        S_max is 9,
+display_bottom_board([], S_max):- nl.
+display_bottom_board([L1|Ls], S_max):-
         length(L1, S_list),
         S is S_max-S_list,
         display_spaces(S+1),
         display_char_line_bottom(L1),
         display_spaces(S+1),
         display_bottom_line(L1),
-        display_bottom_board(Ls).
+        display_bottom_board(Ls, S_max).
 
 
 /***    Display First Line of Board  ***/
@@ -138,6 +135,15 @@ display_spaces(S):-
         S1 is S-1,
         display_spaces(S1).
 
+
+/* Get Size of longest list */
+get_max_size([], Size, MaxSize):-Size is MaxSize, 
+        write(Size), nl.
+
+get_max_size([L1|Ls], Size, MaxSize):-
+        length(L1, S),
+        Size1 is max(MaxSize, S),
+        get_max_size(Ls, Size, Size1).
 
            
 /***    Splits list in two equal lists   ***/
