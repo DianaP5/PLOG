@@ -3,6 +3,7 @@
 :-consult('utils.pl').
 :-use_module(library(lists)).
 
+
 %game(+Level, +Tab, +Name1, +Name2)
 game(Level, Board, Name1, Name2):- board(Board), display_board(Board),
                                                                         processarMov(Level, Name1, Board, NewBoard, XCol, Linha, XFinal, YFinal), !.
@@ -16,38 +17,32 @@ getMove(Player, Coluna, Linha):-
                                                                  (nl, nl, write('  ------ '), write(Player), write(' ------'), nl,
                                                                  repeat, 
                                                                  getLine(Linha), !,
-                                                                 %getColumn(Coluna)),
                                                                  getColumn(Coluna, Linha)), 
                                                                  write(Coluna), write('_'),write(Linha).
                                                                  
                                                                  
-getLine(Linha):- write('  Linha: '),
+/*getLine(Linha):- write('  Linha: '),
                                  get_code(Y), get_code(_),
                                  inverse_line(Y,Linha),
                                  write(Y), nl,
-                                 validLine(Linha).
+                                 validLine(Linha).*/
                                  
 inverse_line(Lin, Y):- Y is Lin - 48.
                                  
-%mudar numeração das linhas para começar no numero 1
+%mudar numeraï¿½ï¿½o das linhas para comeï¿½ar no numero 1
 validLine(Linha):- Linha >= 0, Linha < 10.
 
 validLine(Linha):- write('Linha Invalida!'),
                                         getLine(Linha).
-
-/*getColumn(Coluna):- get_code(Y), get_code(_),
-                                 inverse_column(Y,Coluna),
-                                 write(Y), nl.
-                                 %validColumn(Coluna).*/
                                  
-getColumn(Coluna, Linha):- write('  Coluna: '),
+/*getColumn(Coluna, Linha):- write('  Coluna: '),
                                         get_code(Y), get_code(_),
                                         inverse_column(Y, Coluna2),
                                         write(Y), nl, write(Coluna2), nl, write(Linha),
                                         validColumn(Coluna2, Linha),
                                         write('depois do valid'),write(Coluna2), write(Linha), nl,
                                         readCoords(Coluna2, Linha, Coluna),
-                                        write('depois do read'),write(Coluna2), write(Coluna), nl.
+                                        write('depois do read'),write(Coluna2), write(Coluna), nl.*/
 
 inverse_column(Col, X):- X is Col - 65.
                                         
@@ -125,30 +120,97 @@ getPiece(X, Y, Board, Piece):-
         nth0(Y, Board, ListY),
         nth0(X, ListY, Piece).
 
-movePieceToCell(X, Y, Board_Input, Piece, Board_Output):-
-        getPiece(X, Y, Board_Input, Cell), 
+movePieceToCell(X, Y, Board_Input, Name, Board_Output):-
+        nl, nl, write('  ------ '), write(Name), write(' ------'), nl,
+        repeat,
+        getCoordinates(X, Y),
+        (getPiece(X, Y, Board_Input, Cell)
+        ; 
+        (write('Invalid coordinates'), nl, fail)), !,
         isFree(Cell),
-        replace(Board_Input , X , Y , Piece , Board_Output ).
+        piece(Name, Piece),
+        replace(Board_Input , X , Y , Piece , Board_Output).
 
+test:- board(B), replace(B, 0, 0, b, Board), write(B), nl,write(Board), nl,B = Board, write(B).
 
 % Verifies if piece is on right border %
 isOnRightBorder(X, Y, Board):-
         nth0(Y, Board, ListY),
         length(ListY, Size),
-        write(Size),
         X =:= Size-1.
 
-% Verificar a seguir a colocar peça %
-betweenSamePiecesHorizontal(X, Y, Board, Piece):-
-        ((X =:= 0, X1 is X+1, getPiece(X1, Y, Board, Cell), Cell = Piece)
+% Verificar a seguir a colocar peca %
+checkWonGame(X, Y, Board, Name):-
+
+        piece(Name, Piece), 
+
+        /* Verify if there are four followed pieces in a row of the same type*/
+
+        ((checkTwoRightPieces(X, Y, Board, Piece), checkFourthPieceRight(X, Y, Board, Piece))
         ;
-        (X1 is X+1, getPiece(X1, Y, Board, Cell1), Cell1 = Piece, write(Cell1), X2 is X-1, getPiece(X2, Y, Board, Cell2), Cell2 = Piece)
+        (checkTwoLeftPieces(X, Y, Board, Piece), checkFourthPieceLeft(X, Y, Board, Piece))
         ;
-        (X1 is X-1, getPiece(X1, Y, Board, Cell), Cell = Piece, isOnRightBorder(X, Y, Board))).
+        (checkTwoRightPieces(X, Y, Board, Piece), checkBeforeAfterPieces(X, Y, Board, Piece))
+        ;
+        (checkTwoLeftPieces(X, Y, Board, Piece), checkBeforeAfterPieces(X, Y, Board, Piece))).
+
+
+checkLostGame(X, Y, Board, Name):-
+        /* Verify if there are only three followed pieces in a row */
+
+        ((checkTwoRightPieces(X, Y, Board, Piece))
+        ;
+        (checkTwoLeftPieces(X, Y, Board, Piece))
+        ;
+        (checkBeforeAfterPieces(X, Y, Board, Piece))).
+
+
+checkContinueGame(X, Y, Board, Name) :-
+        isSamePiece(X, Y, Board, Piece).
         
-test:-board(T), betweenSamePiecesHorizontal(3, 1, T, b).
+
+checkTwoRightPieces(X, Y, Board, Piece) :- 
+        X1 is X+1, isSamePiece(X1, Y, Board, Piece),
+        X2 is X+2, isSamePiece(X2, Y, Board, Piece).
+
+checkTwoLeftPieces(X, Y, Board, Piece) :- 
+        X1 is X-1, isSamePiece(X1, Y, Board, Piece),
+        X2 is X-2, isSamePiece(X2, Y, Board, Piece).
+
+checkBeforeAfterPieces(X, Y, Board, Piece):-
+        X1 is X+1, isSamePiece(X1, Y, Board, Piece),
+        X2 is X-1, isSamePiece(X2, Y, Board, Piece).
+
+checkFourthPieceRight(X, Y, Board, Piece):- 
+        X1 is X+3, isSamePiece(X1, Y, Board, Piece).
+
+checkFourthPieceLeft(X, Y, Board, Piece):- 
+        X1 is X-3, isSamePiece(X1, Y, Board, Piece).
 
 
-%test:-board(T), movePieceToCell(0, 0, T, w, Y), display_board(Y).
+isSamePiece(X, Y, Board, Piece):- getPiece(X, Y, Board, Cell), Cell = Piece.
+               
+            
+%game(+Level, +Tab, +Name1, +Name2)
+play_game(Level, Board, Name1, Name2):- 
+        board(Board), 
+        display_board(Board), !,
+        playing(Board, Name1, Name2, UpdateBoard).
+        
 
+playerTurn(Board, Name, UpdateBoard, X, Y):-
+        movePieceToCell(X, Y, Board, Name, UpdateBoard),
+        display_board(UpdateBoard).
 
+stopPlaying(X, Y, Board, Name) :-
+        (\+((checkWonGame(X, Y, UpdateBoard, Name1), write('Player '), write(Name), write(' won the game.'), nl))
+        ;
+        \+((checkEndGame(X, Y, UpdateBoard, Name1), write('Player '), write(Name), write(' lost the game.'), nl))).
+ 
+
+playing(Board, Name1, Name2, UpdateBoard):-
+        playerTurn(Board, Name1, UpdateBoard1, X, Y), 
+        %verificacao de paragem        
+        playerTurn(UpdateBoard1, Name2, UpdateBoard2, X1, X2),
+        %verificacao de paragem     
+        playing(UpdateBoard2, Name1, Name2, UpdateBoard).
