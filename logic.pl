@@ -1,5 +1,6 @@
 
 :-consult('tabuleiro_hexagonal.pl').
+:-consult('utils.pl').
 :-use_module(library(lists)).
 
 %game(+Level, +Tab, +Name1, +Name2)
@@ -90,4 +91,64 @@ casaVizinha(L1, C1, L2, C2):- L1 =:= 5, ((C2 is C1, L2 is L1 - 1);
                                                                                 (C2 is C1 + 1, L2 is L1 + 1)).
                                                                                 
 casaVizinha(L1, C1, L2, C2):- (C2 is C1, L2 is L1).
+
+
+
+
+
+
+
+
+%isFree(s).
+isBlack(b).
+isWhite(w).
+
+
+%nth0(?Y, ?List, ?Elem)
+
+%append(?List1, ?List2, ?List1AndList2)
+
+isFreeCell(X, Y, Board, Cell):-
+        getPiece(X, Y, Board, Cell),
+        isFree(Cell).
+
+isBlackCell(X, Y, Board, Cell):-
+        getPiece(X, Y, Board, Cell),
+        isBlack(Cell).
+
+isWhiteCell(X, Y, Board, Cell):-
+        getPiece(X, Y, Board, Cell),
+        isWhite(Cell).
+
+/* get piece of board */
+getPiece(X, Y, Board, Piece):-
+        nth0(Y, Board, ListY),
+        nth0(X, ListY, Piece).
+
+movePieceToCell(X, Y, Board_Input, Piece, Board_Output):-
+        getPiece(X, Y, Board_Input, Cell), 
+        isFree(Cell),
+        replace(Board_Input , X , Y , Piece , Board_Output ).
+
+
+% Verifies if piece is on right border %
+isOnRightBorder(X, Y, Board):-
+        nth0(Y, Board, ListY),
+        length(ListY, Size),
+        write(Size),
+        X =:= Size-1.
+
+% Verificar a seguir a colocar peça %
+betweenSamePiecesHorizontal(X, Y, Board, Piece):-
+        ((X =:= 0, X1 is X+1, getPiece(X1, Y, Board, Cell), Cell = Piece)
+        ;
+        (X1 is X+1, getPiece(X1, Y, Board, Cell1), Cell1 = Piece, write(Cell1), X2 is X-1, getPiece(X2, Y, Board, Cell2), Cell2 = Piece)
+        ;
+        (X1 is X-1, getPiece(X1, Y, Board, Cell), Cell = Piece, isOnRightBorder(X, Y, Board))).
+        
+test:-board(T), betweenSamePiecesHorizontal(3, 1, T, b).
+
+
+%test:-board(T), movePieceToCell(0, 0, T, w, Y), display_board(Y).
+
 
