@@ -148,8 +148,7 @@ display_spaces(S):-
 
 
 /* Get Size of longest list */
-get_max_size([], Size, MaxSize):-Size is MaxSize, 
-        write(Size), nl.
+get_max_size([], Size, MaxSize):-Size is MaxSize, nl.
 
 get_max_size([L1|Ls], Size, MaxSize):-
         length(L1, S),
