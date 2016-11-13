@@ -12,36 +12,24 @@ isWhite(w).
 
 /**----------------- PIECE -------------------**/
 
-isFreeCell(X, Y, Board, Cell):-
+isFreeCell(X, Y, Board):-
         getPiece(X, Y, Board, Cell),
         isFree(Cell).
 
-isBlackCell(X, Y, Board, Cell):-
+isBlackCell(X, Y, Board):-
         getPiece(X, Y, Board, Cell),
         isBlack(Cell).
 
-isWhiteCell(X, Y, Board, Cell):-
+isWhiteCell(X, Y, Board):-
         getPiece(X, Y, Board, Cell),
         isWhite(Cell).
-
 
 getPiece(X, Y, Board, Piece):-
         nth0(Y, Board, ListY),
         nth0(X, ListY, Piece).
 
-
-movePieceToCell(X, Y, Board_Input, Name, Board_Output):-
-        repeat,
-        getCoordinates(X, Y),
-        ((getPiece(X, Y, Board_Input, Cell), isFree(Cell))
-        ; 
-        (write('Invalid coordinates'), nl, fail)), !,
-        piece(Name, Piece),
-        replace(Board_Input , X , Y , Piece , Board_Output).
-
-
-
 isSamePiece(X, Y, Board, Piece):- getPiece(X, Y, Board, Cell), Cell = Piece.
+
 
 
 /**----------------- WIN GAME -------------------**/
@@ -98,9 +86,9 @@ checkLostGame(X, Y, Board, Name):-
 checkDraw(X, 9, Board).
 checkDraw(X, Y, Board) :-
 
-        ((isBlackCell(X, Y, Board, Cell))
+        ((isBlackCell(X, Y, Board))
         ;
-        (isWhiteCell(X, Y, Board, Cell))),
+        (isWhiteCell(X, Y, Board))),
 
         nth0(Y, Board, ListY), 
         length(ListY, Size),
@@ -117,9 +105,9 @@ lastFreeCell(X, 9, Board, N).
 
 lastFreeCell(X, Y, Board, N) :-
         N<2,
-        ((isFreeCell(X, Y, Board, Cell), N1 is N+1)
+        ((isFreeCell(X, Y, Board), N1 is N+1)
         ;
-        ((\+ isFreeCell(X, Y, Board, Cell), N1 is N))),
+        ((\+ isFreeCell(X, Y, Board), N1 is N))),
 
         nth0(Y, Board, ListY), 
         length(ListY, Size),
@@ -127,7 +115,6 @@ lastFreeCell(X, Y, Board, N) :-
         ;
         (X < Size-1, X1 is X+1, Y1 is Y)),
         lastFreeCell(X1, Y1, Board, N1).
-
 
 
 /**----------------- HORIZONTAL -------------------**/
@@ -232,6 +219,15 @@ playerTurn(Board, Name, UpdateBoard, X, Y):-
         movePieceToCell(X, Y, Board, Name, UpdateBoard),
         display_board(UpdateBoard).
 
+movePieceToCell(X, Y, Board_Input, Name, Board_Output):-
+        repeat,
+        getCoordinates(X, Y),
+        ((getPiece(X, Y, Board_Input, Cell), isFree(Cell))
+        ; 
+        (write('Invalid coordinates'), nl, fail)), !,
+        piece(Name, Piece),
+        replace(Board_Input , X , Y , Piece , Board_Output).
+
 
 
 /**----------------- BOT-------------------**/   
@@ -241,30 +237,25 @@ botTurn(Board, Name, UpdateBoard, X, Y):-
         movePieceToCellBot(X, Y, Board, Name, UpdateBoard),
         display_board(UpdateBoard).
 
-
 movePieceToCellBot(X, Y, Board_Input, Name, Board_Output):-
         piece(Name, Piece),
         replace(Board_Input , X , Y , Piece , Board_Output).
 
-        
-generateRandomCoordinates(X, Y, Board, Level, PossibleMoves):-
+generateRandomCoordinates(X, Y, Board, Level):-
         repeat,
         random(0, 9, Y),
         nth0(Y, Board, ListY),
         length(ListY, Size),
         random(0, Size, X),
-        ((Level =:= 2, isFreeCell(X, Y, Board, Cell),
+        ((Level =:= 2, isFreeCell(X, Y, Board),
                 ((lastFreeCell(0, 0, Board, 0)) %verifica se só há uma casa disponível
                 ;
                 (\+checkLostGame(X, Y, Board, Name)) %verifica se não perde a jogar
-                /*;
-                (checkTriangle(Board, X, Y, PossibleMoves))*/
                 ))
         ;
-        (Level =:= 1, isFreeCell(X, Y, Board, Cell))
+        (Level =:= 1, isFreeCell(X, Y, Board))
         ; 
         fail), !.
-
 
 checkTriangle(Board, X, Y, PossibleMoves):-
         Y1 is Y+3,
@@ -280,18 +271,15 @@ checkTriangle(Board, X, Y, PossibleMoves):-
         ((X2 is X+3)
         ;
         (X2 is X-3)),
-        isFreeCell(X1, Y1, Board, Cell),
-        isFreeCell(X2, Y2, Board, Cell),
+        isFreeCell(X1, Y1, Board),
+        isFreeCell(X2, Y2, Board),
         PossibleMoves = [[X1, Y1], [X2, Y2]].
-
-tri:- board(B), checkTriangle(B, 0, 0, PossibleMoves), write(PossibleMoves), nl.
-
 
 checkPossibleWinTest(X, Y, Board, Name, Xfinal, Yfinal) :-
         Y < 9,
         nth0(Y, Board, ListY), 
         length(ListY, Size),
-        (((isFreeCell(X, Y, Board, Cell), checkWonGame(X, Y, Board, Name), Xfinal is X, Yfinal is Y)
+        (((isFreeCell(X, Y, Board), checkWonGame(X, Y, Board, Name), Xfinal is X, Yfinal is Y)
         ;
         (((X>=Size, X1 is 0, Y1 is Y+1)
         ;
@@ -329,7 +317,7 @@ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1, Name2)),
 
-        bestOption(Level, UpdateBoard1, Name2, Name1, PossibleMoves, X1, Y1),
+        bestOption(Level, UpdateBoard1, Name2, Name1, X1, Y1),
 
         %verificacao de paragem       
         botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
@@ -349,7 +337,7 @@ play_game_bots(Level, Board, Name1, Name2):-
 
 playingBots(Level, Board, Name1, Name2, UpdateBoard):-
 
-        bestOption(Level, Board, Name1, Name2, PossibleMoves1, X, Y),
+        bestOption(Level, Board, Name1, Name2, X, Y),
 
         botTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1, Name2)),
@@ -357,7 +345,7 @@ playingBots(Level, Board, Name1, Name2, UpdateBoard):-
         %sleep(2),
         %read(Hello),
 
-        bestOption(Level, UpdateBoard1, Name2, Name1, PossibleMoves2, X1, Y1),
+        bestOption(Level, UpdateBoard1, Name2, Name1, X1, Y1),
 
         %verificacao de paragem       
         botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
@@ -367,7 +355,7 @@ playingBots(Level, Board, Name1, Name2, UpdateBoard):-
         playingBots(Level, UpdateBoard2, Name1, Name2, UpdateBoard).
 
 
-bestOption(Level, Board, Name1, Name2, PossibleMoves, X, Y):-
+bestOption(Level, Board, Name1, Name2, X, Y):-
         ((Level =:= 2, 
                 ((checkPossibleWinTest(0, 0, Board, Name1, X, Y)) %verifica se pode ganhar
                 ;
@@ -376,4 +364,4 @@ bestOption(Level, Board, Name1, Name2, PossibleMoves, X, Y):-
         ;
         (Level =:= 1, checkPossibleWinTest(0, 0, Board, Name2, X, Y)) %verifica se o outro jogador pode ganhar
         ;
-        (generateRandomCoordinates(X, Y, Board, Level, PossibleMoves))).  %escolhe coordenadas aleatórias
+        (generateRandomCoordinates(X, Y, Board, Level))).  %escolhe coordenadas aleatórias
