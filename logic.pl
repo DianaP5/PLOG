@@ -137,13 +137,6 @@ movePieceToCell(X, Y, Board_Input, Name, Board_Output):-
 
 isSamePiece(X, Y, Board, Piece):- getPiece(X, Y, Board, Cell), Cell = Piece.
 
-% Verifies if piece is on right border %
-isOnRightBorder(X, Y, Board):-
-        nth0(Y, Board, ListY),
-        length(ListY, Size),
-        X =:= Size-1.
-
-
 
 /**----------------- WIN GAME -------------------**/
 checkWonGame(X, Y, Board, Name):-
@@ -280,6 +273,7 @@ checkTwoUpPieces2(X, Y, Board, Piece):-
         X2 is X+2, Y2 is Y-2, isSamePiece(X2, Y2, Board, Piece))).
 
 
+
 stopPlaying(X, Y, Board, Name) :-  
         ((checkWonGame(X, Y, Board, Name), write('Player '), write(Name), write(' won the game.'), nl)
         ;
@@ -297,69 +291,32 @@ playerTurn(Board, Name, UpdateBoard, X, Y):-
 
 /**----------------- BOT-------------------**/   
 
-botTurn(Level, Board, Name, UpdateBoard, X, Y):-
+botTurn(Board, Name, UpdateBoard, X, Y):-
         nl, nl, write('  ------ '), write(Name), write(' ------'), nl,
-        movePieceToCellBot(Level, X, Y, Board, Name, UpdateBoard),
+        movePieceToCellBot(X, Y, Board, Name, UpdateBoard),
         display_board(UpdateBoard).
 
 
-movePieceToCellBot(Level, X, Y, Board_Input, Name, Board_Output):-
+movePieceToCellBot(X, Y, Board_Input, Name, Board_Output):-
         piece(Name, Piece),
         replace(Board_Input , X , Y , Piece , Board_Output).
 
+%checkPossibleWinTest(X, 9, Board, Name, Xfinal, Yfinal):- write('Acabei').
 
-/**---- HORIZONTAL BOT MOVES ----**/
-
-checkRightPiece(X, Y, Board, Piece):-
-        X1 is X+1, isSamePiece(X1, Y, Board, Piece).
-
-checkTwoPiecesAwayRight(X, Y, Board, Piece):-
-        X1 is X+2, isSamePiece(X1, Y, Board, Piece).
-
-checkThreePiecesAwayRight(X, Y, Board, Piece):-
-        X1 is X+3, isSamePiece(X1, Y, Board, Piece).
-
-checkLeftPiece(X, Y, Board, Piece):-
-        X1 is X-1, isSamePiece(X1, Y, Board, Piece).
-
-checkTwoPiecesAwayLeft(X, Y, Board, Piece):-
-        X1 is X-2, isSamePiece(X1, Y, Board, Piece).
-
-checkThreePiecesAwayLeft(X, Y, Board, Piece):-
-        X1 is X-3, isSamePiece(X1, Y, Board, Piece).
-
-checkThreePiecesAwayDiagonal1(X, Y, Board, Piece):-
-        ((Y<2, X1 is X+3, Y1 is Y+3, isSamePiece(X1, Y1, Board, Piece))
+checkPossibleWinTest(X, Y, Board, Name, Xfinal, Yfinal) :-
+        Y < 9,
+        nth0(Y, Board, ListY), 
+        length(ListY, Size),
+        (((isFreeCell(X, Y, Board, Cell), checkWonGame(X, Y, Board, Name), Xfinal is X, Yfinal is Y)
         ;
-        (Y =:= 2, X1 is X+2, Y1 is Y+3, isSamePiece(X1, Y1, Board, Piece))
+        (((X>=Size, X1 is 0, Y1 is Y+1)
         ;
-        (Y =:= 3, X1 is X+1, Y1 is Y+3, isSamePiece(X1, Y1, Board, Piece))
-        ;
-        (Y > 3, Y1 is Y+3, isSamePiece(X, Y1, Board, Piece))
-        ).
-
-%falta fazer mais verificacoes de diagonais
-
-%Verifica se o jogador adversário pode ganhar
-checkPossibleWinEnemy(X, Y, Board, Name, X1, Y1):-
-        piece(Name, Piece),
-        ((checkThreePiecesAwayRight(X, Y, Board, Piece),
-                ((checkRightPiece(X, Y, Board, Piece), X1 is X+2, Y1 is Y)
-                ;
-                (checkTwoPiecesAwayRight(X, Y, Board, Piece), X1 is X+1, Y1 is Y)))
-        ;
-        (checkThreePiecesAwayLeft(X, Y, Board, Piece),
-                ((checkLeftPiece(X, Y, Board, Piece), X1 is X-2, Y1 is Y)
-                ;
-                (checkTwoPiecesAwayLeft(X, Y, Board, Piece), X1 is X-1, Y1 is Y)))
-        ).
+        (X<Size, X1 is X+1, Y1 is Y)),
+        checkPossibleWinTest(X1, Y1, Board, Name, Xfinal, Yfinal)))).
 
 
-block(Board, Piece, Name):-
-        piece(Name, Piece).
 
-
-test:- board(B), Name2 = 'cat', assert(piece(Name2, b)), checkPossibleWin(0, 0, B, Name2, X, Y), write(X), nl, write(Y).
+test1:- board(B), Name2 = 'cat', assert(piece(Name2, b)), checkPossibleWinTest(0, 0, B, Name2, Xf, Yf), write(Xf), write(' '), write(Yf).
 
 
 /**----------------- PLAY GAME HUMAN VS HUMAN-------------------**/     
@@ -392,20 +349,30 @@ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1)),
 
-        ((checkPossibleWinEnemy(X, Y, Board, Name1, X1, Y1))
+        ((checkPossibleWinTest(0, 0, UpdateBoard1, Name1, X1, Y1))
         ;
-        generateRandomCoordinates(X1, Y1, Board_Input)),
+        (generateRandomCoordinates(X1, Y1, UpdateBoard1))),
 
         %verificacao de paragem       
-        botTurn(Level, UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
+        botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
         (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2)),
 
         %verificacao de paragem     
         playingHumanBot(Level, UpdateBoard2, Name1, Name2, UpdateBoard).
 
-fim:- board(B), getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), playing(B, Name1, Name2, Board).
+fim:- board(B), getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), playingHumanBot(_, B, Name1, Name2, Board).
 
+generateRandomCoordinates(X, Y, Board):-
+        repeat,
+        random(0, 9, Y),
+        nth0(Y, Board, ListY),
+        length(ListY, Size),
+        random(0, Size, X),
+        ((isFreeCell(X, Y, Board, Cell))
+        ; 
+        (fail)), !.
 
+testc:-board(B), generateRandomCoordinates(X, Y, B), write(X), write(' '), write(Y).
 
 %PARA FAZER: 
 
