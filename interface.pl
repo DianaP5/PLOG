@@ -2,6 +2,8 @@
 :-consult('tabuleiro_hexagonal.pl').
 :-consult('dataBase.pl').
 :-consult('logic.pl').
+:-consult('utils.pl').
+:- dynamic piece/2.
 
 %:-use_module(library(lists)).
 
@@ -24,7 +26,7 @@ menu:- write(' _ _ _ _ _ _ _'), nl,
            get_code(Code), get_code(_),
            (Code =:= 49, nl, modoJogo).
           
-modoJogo:- repeat,
+modoJogo:- /*repeat,*/
                    nl,write('+-----------------------------------------+'),nl,
               write('|              Modos de Jogo              |'),nl,
                           write('+-----------------------------------------+'),nl,
@@ -36,7 +38,7 @@ modoJogo:- repeat,
               write('+-----------------------------------------+'),nl,nl,nl,
                           get_code(Code2), get_code(_), 
                           ((Code2 == 48, nl, modoJogo);
-                          (Code2 == 49, nl, namePlayer1(Name1), namePlayer2(Name2), game(_, T, Name1, Name2));
+                          (Code2 == 49, nl, getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), play_game(_, T, Name1, Name2));
                           (Code2 == 50, nl,dificuldadeJogo);
                           (Code2 == 51, nl, start)).
                           %play_game.
