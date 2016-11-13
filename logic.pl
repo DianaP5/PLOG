@@ -109,7 +109,23 @@ checkDraw(X, Y, Board) :-
 
         checkDraw(X1, Y1, Board).
 
-draw:- board(B), checkDraw(0, 0, B).
+
+lastFreeCell(X, 9, Board, N).
+
+lastFreeCell(X, Y, Board, N) :-
+        N<2,
+        ((isFreeCell(X, Y, Board, Cell), N1 is N+1)
+        ;
+        ((\+ isFreeCell(X, Y, Board, Cell), N1 is N))),
+
+        nth0(Y, Board, ListY), 
+        length(ListY, Size),
+        ((X >= Size-1, X1 is 0, Y1 is Y+1)
+        ;
+        (X < Size-1, X1 is X+1, Y1 is Y)),
+        lastFreeCell(X1, Y1, Board, N1).
+
+draw:- board(B), lastFreeCell(0, 0, B, 0), write(N).
 
 
 
@@ -230,15 +246,19 @@ movePieceToCellBot(X, Y, Board_Input, Name, Board_Output):-
         replace(Board_Input , X , Y , Piece , Board_Output).
 
         
-generateRandomCoordinates(X, Y, Board):-
+generateRandomCoordinates(X, Y, Board, Level):-
         repeat,
         random(0, 9, Y),
         nth0(Y, Board, ListY),
         length(ListY, Size),
         random(0, Size, X),
-        ((isFreeCell(X, Y, Board, Cell))
+        ((Level =:= 2, isFreeCell(X, Y, Board, Cell), lastFreeCell(0, 0, Board, 0))
+        ;
+        (Level =:= 2, isFreeCell(X, Y, Board, Cell), write(X), write(Y), nl, (\+checkLostGame(X, Y, Board, Name)))
+        ;
+        (Level =:= 1, isFreeCell(X, Y, Board, Cell))
         ; 
-        (fail)), !.
+        fail), !.
 
 
 checkPossibleWinTest(X, Y, Board, Name, Xfinal, Yfinal) :-
@@ -288,7 +308,7 @@ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
         ;
         (checkPossibleWinTest(0, 0, UpdateBoard1, Name1, X1, Y1))
         ;
-        (generateRandomCoordinates(X1, Y1, UpdateBoard1))),
+        (generateRandomCoordinates(X1, Y1, UpdateBoard1, Level))),
 
         %verificacao de paragem       
         botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
@@ -312,7 +332,7 @@ playingBots(Level, Board, Name1, Name2, UpdateBoard):-
         ;
         (checkPossibleWinTest(0, 0, Board, Name2, X, Y))
         ;
-        (generateRandomCoordinates(X, Y, Board))),
+        (generateRandomCoordinates(X, Y, Board, Level))),
 
         botTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1, Name2)),
@@ -322,7 +342,7 @@ playingBots(Level, Board, Name1, Name2, UpdateBoard):-
         ;
         (checkPossibleWinTest(0, 0, UpdateBoard1, Name1, X1, Y1))
         ;
-        (generateRandomCoordinates(X1, Y1, UpdateBoard1))),
+        (generateRandomCoordinates(X1, Y1, UpdateBoard1, Level))),
 
         %verificacao de paragem       
         botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
