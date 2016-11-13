@@ -1,3 +1,4 @@
+:-consult('tabuleiro_hexagonal.pl').
 
 %Replace column
 
