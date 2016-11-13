@@ -37,3 +37,14 @@ getCoordinates(X, Y):-
         nl, write(' Insert coordinates: '), nl,
         getColumn(X), nl,
         getLine(Y).
+
+
+generateRandomCoordinates(X, Y, Board):-
+        repeat,
+        random(0, 9, Y),
+        nth0(Y, Board, ListY),
+        length(ListY, Size),
+        random(0, Size, X),
+        ((getPiece(X, Y, Board_Input, Cell), isFree(Cell))
+        ; 
+        (write('Invalid coordinates'), nl, fail)), !.

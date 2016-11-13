@@ -1,7 +1,7 @@
 /*Yavalath's board*/
          
 /***************        Board Representation          ******************/
-board(  [[s, s, s, s, s],
+board(  [[b, b, s, s, s],
        [s, s, s, s, s, s],
       [s, s, s, s, s, s, s],
     [s, s, s, s, s, s, s, s],
@@ -168,6 +168,6 @@ split([H|T], [_, _|T1], [H | T2], B) :-
 /* Translates*/
 translate(s, ' ').
 %white
-translate(w, 'o').
+translate(w, 'O').
 %black
 translate(b, '*').
