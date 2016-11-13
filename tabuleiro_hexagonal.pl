@@ -168,6 +168,6 @@ split([H|T], [_, _|T1], [H | T2], B) :-
 /* Translates*/
 translate(s, ' ').
 %white
-translate(w, 'o').
+translate(w, 'O').
 %black
 translate(b, '*').

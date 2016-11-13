@@ -22,7 +22,7 @@ start:-          nl,write('+-----------------------------------------+'),nl,
 %menu principal
 menu:- write(' _ _ _ _ _ _ _'), nl,
            write('|1. Start Game'), nl,
-       write('|0. Quit'), nl, nl,
+           write('|0. Quit'), nl, nl,
            get_code(Code), get_code(_),
            (Code =:= 49, nl, modoJogo).
           
@@ -36,11 +36,11 @@ modoJogo:- /*repeat,*/
                       write('|3. Computador vs Computador              |'),nl,
                           write('|0. Voltar                                |'),nl,
               write('+-----------------------------------------+'),nl,nl,nl,
-                          get_code(Code2), get_code(_), 
-                          ((Code2 == 48, nl, modoJogo);
-                          (Code2 == 49, nl, getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), play_game(_, T, Name1, Name2));
-                          (Code2 == 50, nl,dificuldadeJogo);
-                          (Code2 == 51, nl, start)).
+                          get_code(Code1), get_code(_), 
+                          ((Code1 == 48, nl, modoJogo);
+                          (Code1 == 49, nl, getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), play_game_humans(T, Name1, Name2));
+                          (Code1 == 50, nl,dificuldadeJogo);
+                          (Code1 == 51, nl, start)).
                           %play_game.
                           
                           
@@ -50,5 +50,7 @@ dificuldadeJogo:- write(' _ _ _ _ _ _ _'), nl,
                                   write('|3. Hard      '), nl,
                                   write('|0. Voltar    '), nl,nl,
                                   get_code(Code2), get_code(_),
-                                  (Code2 =:= 48, nl, start).
+                                  ((Code2 =:= 48, nl, start);
+                                  (Code2 =:= 49, nl, getPlayerName(Name1), assert(piece(Name1, b)),  Name2 = 'CPU', assert(piece(Name2, w)), play_game_human_bot(1, T, Name1, Name2))).
+                    
                                   %play_game.

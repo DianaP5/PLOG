@@ -2,6 +2,7 @@
 :-consult('tabuleiro_hexagonal.pl').
 :-consult('utils.pl').
 :-use_module(library(lists)).
+:-use_module(library(random)).
 
 
 %game(+Level, +Tab, +Name1, +Name2)
@@ -131,6 +132,7 @@ movePieceToCell(X, Y, Board_Input, Name, Board_Output):-
         (write('Invalid coordinates'), nl, fail)), !,
         piece(Name, Piece),
         replace(Board_Input , X , Y , Piece , Board_Output).
+
 
 
 isSamePiece(X, Y, Board, Piece):- getPiece(X, Y, Board, Cell), Cell = Piece.
@@ -277,31 +279,58 @@ checkTwoUpPieces2(X, Y, Board, Piece):-
         (Y > 5, X1 is X+1, Y1 is Y-1, isSamePiece(X1, Y1, Board, Piece),
         X2 is X+2, Y2 is Y-2, isSamePiece(X2, Y2, Board, Piece))).
 
-test:-board(B), checkBetweenPieces2(1, 5, B, b).
 
-               
+stopPlaying(X, Y, Board, Name) :-  
+        ((checkWonGame(X, Y, Board, Name), write('Player '), write(Name), write(' won the game.'), nl)
+        ;
+        (checkLostGame(X, Y, Board, Name), write('Player '), write(Name), write(' lost the game.'), nl)).
 
-/**----------------- PLAY GAME -------------------**/     
 
-%game(+Level, +Tab, +Name1, +Name2)
-play_game(Level, Board, Name1, Name2):- 
-        board(Board), 
-        display_board(Board), !,
-        (\+ playing(Board, Name1, Name2, UpdateBoard)).
-        
+/**----------------- HUMAN-------------------**/      
 
 playerTurn(Board, Name, UpdateBoard, X, Y):-
         nl, nl, write('  ------ '), write(Name), write(' ------'), nl,
         movePieceToCell(X, Y, Board, Name, UpdateBoard),
         display_board(UpdateBoard).
 
-stopPlaying(X, Y, Board, Name) :-  
-        ((checkWonGame(X, Y, Board, Name), write('Player '), write(Name), write(' won the game.'), nl)
-        ;
-        (checkLostGame(X, Y, Board, Name), write('Player '), write(Name), write(' lost the game.'), nl)).
- 
 
-playing(Board, Name1, Name2, UpdateBoard):-
+
+/**----------------- BOT-------------------**/   
+
+botTurn(Level, Board, Name, UpdateBoard, X, Y):-
+        nl, nl, write('  ------ '), write(Name), write(' ------'), nl,
+        movePieceToCellBot(Level, X, Y, Board, Name, UpdateBoard),
+        display_board(UpdateBoard).
+
+
+movePieceToCellBot(Level, X, Y, Board_Input, Name, Board_Output):-
+        generateRandomCoordinates(X, Y, Board_Input),
+        piece(Name, Piece),
+        replace(Board_Input , X , Y , Piece , Board_Output).
+
+
+checkPossibleWin(X, Y, Board, Piece).
+        
+
+block(Board, Piece, Name_Enemy):-
+        piece(Name_Enemy, Piece).
+
+
+
+
+rand:- board(B), Name2 = 'CPU', assert(piece(Name2, w)), botTurn(_, B, Name2, Board, X, Y).
+aux:- random(0, 10, Y), write(Y).
+
+
+/**----------------- PLAY GAME HUMAN VS HUMAN-------------------**/     
+
+%game(+Level, +Tab, +Name1, +Name2)
+play_game_humans(Board, Name1, Name2):- 
+        board(Board), 
+        display_board(Board), !,
+        (\+ playingHumans(Board, Name1, Name2, UpdateBoard)).
+
+playingHumans(Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1)), 
 
@@ -310,6 +339,29 @@ playing(Board, Name1, Name2, UpdateBoard):-
         (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2)),
 
         %verificacao de paragem     
-        playing(UpdateBoard2, Name1, Name2, UpdateBoard).
+        playingHumans(UpdateBoard2, Name1, Name2, UpdateBoard).
+
+
+/**----------------- PLAY GAME HUMAN VS BOT-------------------**/
+
+play_game_human_bot(Level, Board, Name1, Name2):-
+        board(Board), 
+        display_board(Board), !,
+        (\+ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard)).
+
+
+playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
+        playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
+        (\+ stopPlaying(X, Y, UpdateBoard1, Name1)), 
+
+        %verificacao de paragem       
+        botTurn(Level, UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
+        (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2)),
+
+        %verificacao de paragem     
+        playingHumanBot(Level, UpdateBoard2, Name1, Name2, UpdateBoard).
 
 fim:- board(B), getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), playing(B, Name1, Name2, Board).
+
+
+//FALTA CONDICAO DE EMPATE
