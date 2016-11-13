@@ -93,19 +93,12 @@ casaVizinha(L1, C1, L2, C2):- (C2 is C1, L2 is L1).
 
 
 
-
-
-%isFree(s).
 isBlack(b).
 isWhite(w).
 
 
-%nth0(?Y, ?List, ?Elem)
-
-%append(?List1, ?List2, ?List1AndList2)
-
-
 /**----------------- PIECE -------------------**/
+
 isFreeCell(X, Y, Board, Cell):-
         getPiece(X, Y, Board, Cell),
         isFree(Cell).
@@ -186,6 +179,27 @@ checkLostGame(X, Y, Board, Name):-
         (checkTwoUpPieces2(X, Y, Board, Piece))
         ).
         
+
+/**----------------- DRAW -------------------**/
+
+checkDraw(X, 9, Board).
+checkDraw(X, Y, Board) :-
+
+        ((isBlackCell(X, Y, Board, Cell))
+        ;
+        (isWhiteCell(X, Y, Board, Cell))),
+
+        nth0(Y, Board, ListY), 
+        length(ListY, Size),
+        ((X >= Size-1, X1 is 0, Y1 is Y+1)
+        ;
+        (X < Size-1, X1 is X+1, Y1 is Y)),
+
+        checkDraw(X1, Y1, Board).
+
+draw:- board(B), checkDraw(0, 0, B).
+
+
 
 /**----------------- HORIZONTAL -------------------**/
 checkTwoRightPieces(X, Y, Board, Piece) :- 
@@ -277,7 +291,9 @@ checkTwoUpPieces2(X, Y, Board, Piece):-
 stopPlaying(X, Y, Board, Name) :-  
         ((checkWonGame(X, Y, Board, Name), write('Player '), write(Name), write(' won the game.'), nl)
         ;
-        (checkLostGame(X, Y, Board, Name), write('Player '), write(Name), write(' lost the game.'), nl)).
+        (checkLostGame(X, Y, Board, Name), write('Player '), write(Name), write(' lost the game.'), nl)
+        ;
+        (checkDraw(X, Y, Board), write('Draw.'), nl)).
 
 
 /**----------------- HUMAN-------------------**/      
@@ -301,7 +317,6 @@ movePieceToCellBot(X, Y, Board_Input, Name, Board_Output):-
         piece(Name, Piece),
         replace(Board_Input , X , Y , Piece , Board_Output).
 
-%checkPossibleWinTest(X, 9, Board, Name, Xfinal, Yfinal):- write('Acabei').
 
 checkPossibleWinTest(X, Y, Board, Name, Xfinal, Yfinal) :-
         Y < 9,
@@ -313,10 +328,6 @@ checkPossibleWinTest(X, Y, Board, Name, Xfinal, Yfinal) :-
         ;
         (X<Size, X1 is X+1, Y1 is Y)),
         checkPossibleWinTest(X1, Y1, Board, Name, Xfinal, Yfinal)))).
-
-
-
-test1:- board(B), Name2 = 'cat', assert(piece(Name2, b)), checkPossibleWinTest(0, 0, B, Name2, Xf, Yf), write(Xf), write(' '), write(Yf).
 
 
 /**----------------- PLAY GAME HUMAN VS HUMAN-------------------**/     
@@ -349,7 +360,10 @@ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1)),
 
-        ((checkPossibleWinTest(0, 0, UpdateBoard1, Name1, X1, Y1))
+
+        ((Level =:= 2, checkPossibleWinTest(0, 0, UpdateBoard1, Name2, X1, Y1))
+        ;
+        (checkPossibleWinTest(0, 0, UpdateBoard1, Name1, X1, Y1))
         ;
         (generateRandomCoordinates(X1, Y1, UpdateBoard1))),
 
@@ -360,7 +374,6 @@ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
         %verificacao de paragem     
         playingHumanBot(Level, UpdateBoard2, Name1, Name2, UpdateBoard).
 
-fim:- board(B), getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), playingHumanBot(_, B, Name1, Name2, Board).
 
 generateRandomCoordinates(X, Y, Board):-
         repeat,
@@ -372,7 +385,6 @@ generateRandomCoordinates(X, Y, Board):-
         ; 
         (fail)), !.
 
-testc:-board(B), generateRandomCoordinates(X, Y, B), write(X), write(' '), write(Y).
 
 %PARA FAZER: 
 
