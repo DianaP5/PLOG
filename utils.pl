@@ -1,4 +1,4 @@
-:-consult('tabuleiro_hexagonal.pl').
+:-consult('board.pl').
 
 %Replace column
 
