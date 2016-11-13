@@ -2,14 +2,14 @@
          
 /***************        Board Representation          ******************/
 board(  [[s, s, s, s, s],
-[s, s, s, s, s, s],
-[s, s, s, s, s, s, s],
-[s, s, s, s, s, s, s, s],
-[s, s, s, s, s, s, s, s, s],
-[s, s, s, s, s, s, s, s],
-[s, s, s, s, s, s, s],
-[s, s, s, s, s, s],
-[s, s, s, s, s]]).
+       [s, s, s, s, s, s],
+      [s, s, s, s, s, s, s],
+    [s, s, s, s, s, s, s, s],
+   [s, s, s, s, s, s, s, s, s],
+    [s, s, s, s, s, s, s, s],
+      [s, s, s, s, s, s, s],
+        [s, s, s, s, s, s],
+          [s, s, s, s, s]]).
 
 
 isFree(s).

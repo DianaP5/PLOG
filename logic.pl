@@ -103,6 +103,8 @@ isWhite(w).
 
 %append(?List1, ?List2, ?List1AndList2)
 
+
+/**----------------- PIECE -------------------**/
 isFreeCell(X, Y, Board, Cell):-
         getPiece(X, Y, Board, Cell),
         isFree(Cell).
@@ -115,22 +117,23 @@ isWhiteCell(X, Y, Board, Cell):-
         getPiece(X, Y, Board, Cell),
         isWhite(Cell).
 
-/* get piece of board */
+
 getPiece(X, Y, Board, Piece):-
         nth0(Y, Board, ListY),
         nth0(X, ListY, Piece).
 
+
 movePieceToCell(X, Y, Board_Input, Name, Board_Output):-
         repeat,
         getCoordinates(X, Y),
-        (getPiece(X, Y, Board_Input, Cell)
+        ((getPiece(X, Y, Board_Input, Cell), isFree(Cell))
         ; 
         (write('Invalid coordinates'), nl, fail)), !,
-        isFree(Cell),
         piece(Name, Piece),
         replace(Board_Input , X , Y , Piece , Board_Output).
 
-test:- board(B), replace(B, 0, 0, b, Board), write(B), nl,write(Board), nl,B = Board, write(B).
+
+isSamePiece(X, Y, Board, Piece):- getPiece(X, Y, Board, Cell), Cell = Piece.
 
 % Verifies if piece is on right border %
 isOnRightBorder(X, Y, Board):-
@@ -138,22 +141,31 @@ isOnRightBorder(X, Y, Board):-
         length(ListY, Size),
         X =:= Size-1.
 
-% Verificar a seguir a colocar peca %
+
+
+/**----------------- WIN GAME -------------------**/
 checkWonGame(X, Y, Board, Name):-
 
         piece(Name, Piece), 
 
         /* Verify if there are four followed pieces in a row of the same type*/
 
-        ((checkTwoRightPieces(X, Y, Board, Piece), checkFourthPieceRight(X, Y, Board, Piece))
-        ;
-        (checkTwoLeftPieces(X, Y, Board, Piece), checkFourthPieceLeft(X, Y, Board, Piece))
-        ;
         (checkTwoRightPieces(X, Y, Board, Piece), checkBeforeAfterPieces(X, Y, Board, Piece))
         ;
-        (checkTwoLeftPieces(X, Y, Board, Piece), checkBeforeAfterPieces(X, Y, Board, Piece))).
+        (checkTwoLeftPieces(X, Y, Board, Piece), checkBeforeAfterPieces(X, Y, Board, Piece))
+        ;
+        (checkBetweenPieces1(X, Y, Board, Piece), checkTwoDownPieces1(X, Y, Board, Piece))
+        ;
+        (checkBetweenPieces1(X, Y, Board, Piece), checkTwoUpPieces1(X, Y, Board, Piece))
+        ;
+        (checkBetweenPieces2(X, Y, Board, Piece), checkTwoDownPieces2(X, Y, Board, Piece))
+        ;
+        (checkBetweenPieces2(X, Y, Board, Piece), checkTwoUpPieces2(X, Y, Board, Piece))
+        
+        ).
 
 
+/**----------------- LOST GAME -------------------**/
 checkLostGame(X, Y, Board, Name):-
 
         piece(Name, Piece), 
@@ -164,9 +176,23 @@ checkLostGame(X, Y, Board, Name):-
         ;
         (checkTwoLeftPieces(X, Y, Board, Piece))
         ;
-        (checkBeforeAfterPieces(X, Y, Board, Piece))).
+        (checkBeforeAfterPieces(X, Y, Board, Piece))
+        ;
+        (checkBetweenPieces1(X, Y, Board, Piece))
+        ;
+        (checkTwoDownPieces1(X, Y, Board, Piece))
+        ;
+        (checkTwoUpPieces1(X, Y, Board, Piece))
+        ;
+        (checkBetweenPieces2(X, Y, Board, Piece))
+        ;
+        (checkTwoDownPieces2(X, Y, Board, Piece))
+        ;
+        (checkTwoUpPieces2(X, Y, Board, Piece))
+        ).
         
 
+/**----------------- HORIZONTAL -------------------**/
 checkTwoRightPieces(X, Y, Board, Piece) :- 
         X1 is X+1, isSamePiece(X1, Y, Board, Piece),
         X2 is X+2, isSamePiece(X2, Y, Board, Piece).
@@ -186,14 +212,82 @@ checkFourthPieceLeft(X, Y, Board, Piece):-
         X1 is X-3, isSamePiece(X1, Y, Board, Piece).
 
 
-isSamePiece(X, Y, Board, Piece):- getPiece(X, Y, Board, Cell), Cell = Piece.
+/**----------------- DIAGONAL 1 (Right Bottom)-------------------**/
+
+checkBetweenPieces1(X, Y, Board, Piece):-
+        ((Y < 4, X1 is X+1, Y1 is Y+1, isSamePiece(X1, Y1, Board, Piece),
+        X2 is X-1, Y2 is Y-1, isSamePiece(X2, Y2, Board, Piece))
+        ;
+        (Y =:= 4, X1 is X-1, Y1 is Y-1, isSamePiece(X1, Y1, Board, Piece),
+        Y2 is Y+1, isSamePiece(X, Y2, Board, Piece))
+        ;
+        (Y>4, Y1 is Y+1, isSamePiece(X, Y1, Board, Piece),
+        Y2 is Y-1, isSamePiece(X, Y2, Board, Piece))).
+
+checkTwoDownPieces1(X, Y, Board, Piece):-
+        ((Y < 3, X1 is X+1, Y1 is Y+1, isSamePiece(X1, Y1, Board, Piece),
+        X2 is X+2, Y2 is Y+2, isSamePiece(X2, Y2, Board, Piece))
+        ;
+        (Y =:= 3, X1 is X+1, Y1 is Y+1, isSamePiece(X1, Y1, Board, Piece),
+        X2 is X+1, Y2 is Y+2, isSamePiece(X2, Y2, Board, Piece))
+        ;
+        (Y>3, Y1 is Y+1, isSamePiece(X, Y1, Board, Piece),
+        Y2 is Y+2, isSamePiece(X, Y2, Board, Piece))).
+
+checkTwoUpPieces1(X, Y, Board, Piece):-
+        ((Y < 5, X1 is X-1, Y1 is Y-1, isSamePiece(X1, Y1, Board, Piece),
+        X2 is X-2, Y2 is Y-2, isSamePiece(X2, Y2, Board, Piece))
+        ;
+        (Y =:= 5, Y1 is Y-1, isSamePiece(X, Y1, Board, Piece),
+        X2 is X-1, Y2 is Y-2, isSamePiece(X2, Y2, Board, Piece))
+        ;
+        (Y>5, Y1 is Y-1, isSamePiece(X, Y1, Board, Piece),
+        Y2 is Y-2, isSamePiece(X, Y2, Board, Piece))).
+
+
+/**----------------- DIAGONAL 2 (Right Up)-------------------**/
+
+checkBetweenPieces2(X, Y, Board, Piece):-
+        ((Y < 4, Y1 is Y+1, isSamePiece(X, Y1, Board, Piece),
+        Y2 is Y-1, isSamePiece(X, Y2, Board, Piece))
+        ;
+        (Y =:= 4, Y1 is Y-1, isSamePiece(X, Y1, Board, Piece),
+        X2 is X-1, Y2 is Y+1, isSamePiece(X2, Y2, Board, Piece))
+        ;
+        (Y > 4, X1 is X+1, Y1 is Y-1, isSamePiece(X1, Y1, Board, Piece),
+        X2 is X-1, Y2 is Y+1, isSamePiece(X2, Y2, Board, Piece))).
+
+checkTwoDownPieces2(X, Y, Board, Piece):-
+        ((Y < 3, Y1 is Y+1, isSamePiece(X, Y1, Board, Piece),
+        Y2 is Y+2, isSamePiece(X, Y2, Board, Piece))
+        ;
+        (Y =:= 3, Y1 is Y+1, isSamePiece(X, Y1, Board, Piece),
+        X2 is X-1, Y2 is Y+2, isSamePiece(X2, Y2, Board, Piece))
+        ;
+        (Y > 3, X1 is X-1, Y1 is Y+1, isSamePiece(X1, Y1, Board, Piece),
+        X2 is X-2, Y2 is Y+2, isSamePiece(X2, Y2, Board, Piece))).
+
+checkTwoUpPieces2(X, Y, Board, Piece):-
+        ((Y < 5, Y1 is Y-1, isSamePiece(X, Y1, Board, Piece),
+        Y2 is Y-2, isSamePiece(X, Y2, Board, Piece))
+        ;
+        (Y =:= 5, X1 is X+1, Y1 is Y-1, isSamePiece(X1, Y1, Board, Piece),
+        X2 is X+1, Y2 is Y-2, isSamePiece(X2, Y2, Board, Piece))
+        ;
+        (Y > 5, X1 is X+1, Y1 is Y-1, isSamePiece(X1, Y1, Board, Piece),
+        X2 is X+2, Y2 is Y-2, isSamePiece(X2, Y2, Board, Piece))).
+
+test:-board(B), checkBetweenPieces2(1, 5, B, b).
+
                
-            
+
+/**----------------- PLAY GAME -------------------**/     
+
 %game(+Level, +Tab, +Name1, +Name2)
 play_game(Level, Board, Name1, Name2):- 
         board(Board), 
         display_board(Board), !,
-        playing(Board, Name1, Name2, UpdateBoard).
+        (\+ playing(Board, Name1, Name2, UpdateBoard)).
         
 
 playerTurn(Board, Name, UpdateBoard, X, Y):-
@@ -201,7 +295,7 @@ playerTurn(Board, Name, UpdateBoard, X, Y):-
         movePieceToCell(X, Y, Board, Name, UpdateBoard),
         display_board(UpdateBoard).
 
-stopPlaying(X, Y, Board, Name) :-
+stopPlaying(X, Y, Board, Name) :-  
         ((checkWonGame(X, Y, Board, Name), write('Player '), write(Name), write(' won the game.'), nl)
         ;
         (checkLostGame(X, Y, Board, Name), write('Player '), write(Name), write(' lost the game.'), nl)).
@@ -212,7 +306,7 @@ playing(Board, Name1, Name2, UpdateBoard):-
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1)), 
 
         %verificacao de paragem        
-        playerTurn(UpdateBoard1, Name2, UpdateBoard2, X1, X2), !,
+        playerTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
         (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2)),
 
         %verificacao de paragem     
