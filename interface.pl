@@ -41,7 +41,7 @@ modoJogo:- /*repeat,*/
                           ((Code1 == 48, nl, modoJogo);
                           (Code1 == 49, nl, getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), play_game_humans(T, Name1, Name2));
                           (Code1 == 50, nl,dificuldadeJogo);
-                          (Code1 == 51, nl, Name1 = 'CPU1', assert(piece(Name1, b)),  Name2 = 'CPU2', assert(piece(Name2, w)), play_game_bots(2, T, Name1, Name2))).
+                          (Code1 == 51, nl, Name1 = 'CPU1', assert(piece(Name1, w)),  Name2 = 'CPU2', assert(piece(Name2, b)), play_game_bots(2, T, Name1, Name2))).
                           %play_game.
                           
                           
