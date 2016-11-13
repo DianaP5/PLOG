@@ -121,7 +121,6 @@ getPiece(X, Y, Board, Piece):-
         nth0(X, ListY, Piece).
 
 movePieceToCell(X, Y, Board_Input, Name, Board_Output):-
-        nl, nl, write('  ------ '), write(Name), write(' ------'), nl,
         repeat,
         getCoordinates(X, Y),
         (getPiece(X, Y, Board_Input, Cell)
@@ -156,6 +155,9 @@ checkWonGame(X, Y, Board, Name):-
 
 
 checkLostGame(X, Y, Board, Name):-
+
+        piece(Name, Piece), 
+
         /* Verify if there are only three followed pieces in a row */
 
         ((checkTwoRightPieces(X, Y, Board, Piece))
@@ -163,10 +165,6 @@ checkLostGame(X, Y, Board, Name):-
         (checkTwoLeftPieces(X, Y, Board, Piece))
         ;
         (checkBeforeAfterPieces(X, Y, Board, Piece))).
-
-
-checkContinueGame(X, Y, Board, Name) :-
-        isSamePiece(X, Y, Board, Piece).
         
 
 checkTwoRightPieces(X, Y, Board, Piece) :- 
@@ -199,18 +197,25 @@ play_game(Level, Board, Name1, Name2):-
         
 
 playerTurn(Board, Name, UpdateBoard, X, Y):-
+        nl, nl, write('  ------ '), write(Name), write(' ------'), nl,
         movePieceToCell(X, Y, Board, Name, UpdateBoard),
         display_board(UpdateBoard).
 
 stopPlaying(X, Y, Board, Name) :-
-        (\+((checkWonGame(X, Y, UpdateBoard, Name1), write('Player '), write(Name), write(' won the game.'), nl))
+        ((checkWonGame(X, Y, Board, Name), write('Player '), write(Name), write(' won the game.'), nl)
         ;
-        \+((checkEndGame(X, Y, UpdateBoard, Name1), write('Player '), write(Name), write(' lost the game.'), nl))).
+        (checkLostGame(X, Y, Board, Name), write('Player '), write(Name), write(' lost the game.'), nl)).
  
 
 playing(Board, Name1, Name2, UpdateBoard):-
-        playerTurn(Board, Name1, UpdateBoard1, X, Y), 
+        playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
+        (\+ stopPlaying(X, Y, UpdateBoard1, Name1)), 
+
         %verificacao de paragem        
-        playerTurn(UpdateBoard1, Name2, UpdateBoard2, X1, X2),
+        playerTurn(UpdateBoard1, Name2, UpdateBoard2, X1, X2), !,
+        (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2)),
+
         %verificacao de paragem     
         playing(UpdateBoard2, Name1, Name2, UpdateBoard).
+
+fim:- board(B), getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), playing(B, Name1, Name2, Board).
