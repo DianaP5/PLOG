@@ -1,3 +1,4 @@
+:-consult('tabuleiro_hexagonal.pl').
 
 %Replace column
 
@@ -21,10 +22,6 @@ getPlayerName(Name) :-
   nl,
   read(Name).
 
-displayName(Name) :-
-        write('Player: '),
-        write(Name).
-
 getLine(Y):- 
         write('  Line: '),
         read(Y).
@@ -39,12 +36,12 @@ getCoordinates(X, Y):-
         getLine(Y).
 
 
-generateRandomCoordinates(X, Y, Board):-
-        repeat,
-        random(0, 9, Y),
-        nth0(Y, Board, ListY),
-        length(ListY, Size),
-        random(0, Size, X),
-        ((getPiece(X, Y, Board_Input, Cell), isFree(Cell))
-        ; 
-        (write('Invalid coordinates'), nl, fail)), !.
+displayName(Name):-
+        piece(Name, Piece),
+        translate(Piece, V),
+        nl, nl, write('  ------ '), 
+        write(Name), 
+        write(' ('), 
+        write(V), 
+        write(') '), 
+        write(' ------'), nl.
