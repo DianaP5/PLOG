@@ -5,94 +5,6 @@
 :-use_module(library(random)).
 
 
-%game(+Level, +Tab, +Name1, +Name2)
-game(Level, Board, Name1, Name2):- board(Board), display_board(Board),
-                                                                        processarMov(Level, Name1, Board, NewBoard, XCol, Linha, XFinal, YFinal), !.
-                                                                        
-                                                                                                                                                        
-processarMov(Level, NamePlayer, Board, NewBoard, XCol, Linha, XFinal, YFinal):- 
-                                                                                                getMove(NamePlayer, Coluna, Linha), !.
-                                                                                                                                                        
-                                                                                                                                                        
-getMove(Player, Coluna, Linha):- 
-                                                                 (nl, nl, write('  ------ '), write(Player), write(' ------'), nl,
-                                                                 repeat, 
-                                                                 getLine(Linha), !,
-                                                                 getColumn(Coluna, Linha)), 
-                                                                 write(Coluna), write('_'),write(Linha).
-                                                                 
-                                                                 
-/*getLine(Linha):- write('  Linha: '),
-                                 get_code(Y), get_code(_),
-                                 inverse_line(Y,Linha),
-                                 write(Y), nl,
-                                 validLine(Linha).*/
-                                 
-inverse_line(Lin, Y):- Y is Lin - 48.
-                                 
-%mudar numera��o das linhas para come�ar no numero 1
-validLine(Linha):- Linha >= 0, Linha < 10.
-
-validLine(Linha):- write('Linha Invalida!'),
-                                        getLine(Linha).
-                                 
-/*getColumn(Coluna, Linha):- write('  Coluna: '),
-                                        get_code(Y), get_code(_),
-                                        inverse_column(Y, Coluna2),
-                                        write(Y), nl, write(Coluna2), nl, write(Linha),
-                                        validColumn(Coluna2, Linha),
-                                        write('depois do valid'),write(Coluna2), write(Linha), nl,
-                                        readCoords(Coluna2, Linha, Coluna),
-                                        write('depois do read'),write(Coluna2), write(Coluna), nl.*/
-
-inverse_column(Col, X):- X is Col - 65.
-                                        
-%validColumn(+Coluna, +Linha)
-validColumn(Coluna, Linha):- (Coluna < 4, (write('  Coluna Invalida!'), nl, 
-                                                                getColumn(Coluna, Linha))),
-                                                        ((Linha < 6, XColuna is 4 + Linha);
-                                                        (Linha > 5, XColuna is 9 - Linha + 5)),
-                                                        Coluna =< XColuna.
-                                                        
-validColumn(Coluna, Linha):- (Coluna > 12, (write('  Coluna Invalida!'), nl,
-                                                          getColumn(Coluna, Linha))).
-                                                        
-validColumn1(Coluna, Linha):- Coluna >= 0,
-                                                        ((Linha < 6, XColuna is 4 + Linha);
-                                                        (Linha > 5, XColuna is 9 - Linha + 5)),
-                                                        Coluna =< XColuna.
-
-%parseCoords(+Col, +Lin, -Res)
-readCoords(Col, Lin, Res):- ((Lin < 6, Res is (Col + 5 - Lin));
-                             (Lin > 5, Res is (Col + Lin - 5))).
-                                                
-                                                
-                                                %%%%%%%%%%%%%%%%
-                                        %%%%CELULAS VIZINHAS%%%%
-                                                %%%%%%%%%%%%%%%%
-                                                         
-                
-%casaVizinha(+L1, +C1, -L2, -C2)        (MESMA LINHA OU MESMA COLUNA)                    
-casaVizinha(L1, C1, L2, C2):- (C2 is C1, L2 is L1 + 1).
-casaVizinha(L1, C1, L2, C2):- (C2 is C1, L2 is L1 - 1).
-casaVizinha(L1, C1, L2, C2):- (C2 is C1 + 1, L2 is L1).
-casaVizinha(L1, C1, L2, C2):- (C2 is C1 - 1, L2 is L1).
-
-%casaVizinha(+L1, +C1, -L2, -C2)        (MESMA DIAGONAL)
-casaVizinha(L1, C1, L2, C2):- L1 < 5, ((C2 is C1 + 1, L2 is L1 - 1);
-                                                                                (C2 is C1 - 1, L2 is L1 + 1)).
-casaVizinha(L1, C1, L2, C2):- L1 > 5, ((C2 is C1 + 1, L2 is L1 + 1);
-                                                                                (C2 is C1 - 1, L2 is L1 - 1)).
-casaVizinha(L1, C1, L2, C2):- L1 =:= 5, ((C2 is C1, L2 is L1 - 1);
-                                                                                (C2 is C1 + 1, L2 is L1 + 1)).
-                                                                                
-casaVizinha(L1, C1, L2, C2):- (C2 is C1, L2 is L1).
-
-
-
-
-
-
 isBlack(b).
 isWhite(w).
 
@@ -288,18 +200,18 @@ checkTwoUpPieces2(X, Y, Board, Piece):-
 
 
 
-stopPlaying(X, Y, Board, Name) :-  
+stopPlaying(X, Y, Board, Name, Name1) :-  
         ((checkWonGame(X, Y, Board, Name), write('Player '), write(Name), write(' won the game.'), nl)
         ;
-        (checkLostGame(X, Y, Board, Name), write('Player '), write(Name), write(' lost the game.'), nl)
+        (checkLostGame(X, Y, Board, Name), write('Player '), write(Name1), write(' won the game.'), nl)
         ;
-        (checkDraw(X, Y, Board), write('Draw.'), nl)).
+        (checkDraw(0, 0, Board), write('Draw.'), nl)).
 
 
 /**----------------- HUMAN-------------------**/      
 
 playerTurn(Board, Name, UpdateBoard, X, Y):-
-        nl, nl, write('  ------ '), write(Name), write(' ------'), nl,
+        displayName(Name),
         movePieceToCell(X, Y, Board, Name, UpdateBoard),
         display_board(UpdateBoard).
 
@@ -308,7 +220,7 @@ playerTurn(Board, Name, UpdateBoard, X, Y):-
 /**----------------- BOT-------------------**/   
 
 botTurn(Board, Name, UpdateBoard, X, Y):-
-        nl, nl, write('  ------ '), write(Name), write(' ------'), nl,
+        displayName(Name),
         movePieceToCellBot(X, Y, Board, Name, UpdateBoard),
         display_board(UpdateBoard).
 
@@ -316,6 +228,17 @@ botTurn(Board, Name, UpdateBoard, X, Y):-
 movePieceToCellBot(X, Y, Board_Input, Name, Board_Output):-
         piece(Name, Piece),
         replace(Board_Input , X , Y , Piece , Board_Output).
+
+        
+generateRandomCoordinates(X, Y, Board):-
+        repeat,
+        random(0, 9, Y),
+        nth0(Y, Board, ListY),
+        length(ListY, Size),
+        random(0, Size, X),
+        ((isFreeCell(X, Y, Board, Cell))
+        ; 
+        (fail)), !.
 
 
 checkPossibleWinTest(X, Y, Board, Name, Xfinal, Yfinal) :-
@@ -340,10 +263,10 @@ play_game_humans(Board, Name1, Name2):-
 
 playingHumans(Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
-        (\+ stopPlaying(X, Y, UpdateBoard1, Name1)), 
+        (\+ stopPlaying(X, Y, UpdateBoard1, Name1, Name2)), 
      
         playerTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
-        (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2)),
+        (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2, Name1)),
   
         playingHumans(UpdateBoard2, Name1, Name2, UpdateBoard).
 
@@ -358,7 +281,7 @@ play_game_human_bot(Level, Board, Name1, Name2):-
 
 playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
-        (\+ stopPlaying(X, Y, UpdateBoard1, Name1)),
+        (\+ stopPlaying(X, Y, UpdateBoard1, Name1, Name2)),
 
 
         ((Level =:= 2, checkPossibleWinTest(0, 0, UpdateBoard1, Name2, X1, Y1))
@@ -369,25 +292,41 @@ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
 
         %verificacao de paragem       
         botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
-        (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2)),
+        (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2, Name1)),
 
         %verificacao de paragem     
         playingHumanBot(Level, UpdateBoard2, Name1, Name2, UpdateBoard).
 
 
-generateRandomCoordinates(X, Y, Board):-
-        repeat,
-        random(0, 9, Y),
-        nth0(Y, Board, ListY),
-        length(ListY, Size),
-        random(0, Size, X),
-        ((isFreeCell(X, Y, Board, Cell))
-        ; 
-        (fail)), !.
+/**----------------- PLAY GAME BOT VS BOT-------------------**/
+
+play_game_bots(Level, Board, Name1, Name2):-
+        board(Board), 
+        display_board(Board), !,
+        (\+ playingBots(Level, Board, Name1, Name2, UpdateBoard)).
 
 
-%PARA FAZER: 
+playingBots(Level, Board, Name1, Name2, UpdateBoard):-
 
-%FALTA CONDICAO DE EMPATE
-%FALTA CONDICAO DE POSSIBILIDADE DE GANHAR DO BOT
-%FALTA VERIFICACOES DE DIAGONAIS
+        ((Level =:= 2, checkPossibleWinTest(0, 0, Board, Name1, X, Y))
+        ;
+        (checkPossibleWinTest(0, 0, Board, Name2, X, Y))
+        ;
+        (generateRandomCoordinates(X, Y, Board))),
+
+        botTurn(Board, Name1, UpdateBoard1, X, Y), !,
+        (\+ stopPlaying(X, Y, UpdateBoard1, Name1, Name2)),
+
+
+        ((Level =:= 2, checkPossibleWinTest(0, 0, UpdateBoard1, Name2, X1, Y1))
+        ;
+        (checkPossibleWinTest(0, 0, UpdateBoard1, Name1, X1, Y1))
+        ;
+        (generateRandomCoordinates(X1, Y1, UpdateBoard1))),
+
+        %verificacao de paragem       
+        botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
+        (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2, Name1)),
+
+        %verificacao de paragem     
+        playingBots(Level, UpdateBoard2, Name1, Name2, UpdateBoard).

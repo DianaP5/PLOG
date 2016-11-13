@@ -22,10 +22,6 @@ getPlayerName(Name) :-
   nl,
   read(Name).
 
-displayName(Name) :-
-        write('Player: '),
-        write(Name).
-
 getLine(Y):- 
         write('  Line: '),
         read(Y).
@@ -40,4 +36,12 @@ getCoordinates(X, Y):-
         getLine(Y).
 
 
-
+displayName(Name):-
+        piece(Name, Piece),
+        translate(Piece, V),
+        nl, nl, write('  ------ '), 
+        write(Name), 
+        write(' ('), 
+        write(V), 
+        write(') '), 
+        write(' ------'), nl.
