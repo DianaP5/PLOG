@@ -1,7 +1,7 @@
 /*Yavalath's board*/
          
 /***************        Board Representation          ******************/
-board(  [[s, s, s, s, s],
+board(  [[b, b, s, s, s],
        [s, s, s, s, s, s],
       [s, s, s, s, s, s, s],
     [s, s, s, s, s, s, s, s],

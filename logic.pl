@@ -304,22 +304,62 @@ botTurn(Level, Board, Name, UpdateBoard, X, Y):-
 
 
 movePieceToCellBot(Level, X, Y, Board_Input, Name, Board_Output):-
-        generateRandomCoordinates(X, Y, Board_Input),
         piece(Name, Piece),
         replace(Board_Input , X , Y , Piece , Board_Output).
 
 
-checkPossibleWin(X, Y, Board, Piece).
-        
+/**---- HORIZONTAL BOT MOVES ----**/
 
-block(Board, Piece, Name_Enemy):-
-        piece(Name_Enemy, Piece).
+checkRightPiece(X, Y, Board, Piece):-
+        X1 is X+1, isSamePiece(X1, Y, Board, Piece).
+
+checkTwoPiecesAwayRight(X, Y, Board, Piece):-
+        X1 is X+2, isSamePiece(X1, Y, Board, Piece).
+
+checkThreePiecesAwayRight(X, Y, Board, Piece):-
+        X1 is X+3, isSamePiece(X1, Y, Board, Piece).
+
+checkLeftPiece(X, Y, Board, Piece):-
+        X1 is X-1, isSamePiece(X1, Y, Board, Piece).
+
+checkTwoPiecesAwayLeft(X, Y, Board, Piece):-
+        X1 is X-2, isSamePiece(X1, Y, Board, Piece).
+
+checkThreePiecesAwayLeft(X, Y, Board, Piece):-
+        X1 is X-3, isSamePiece(X1, Y, Board, Piece).
+
+checkThreePiecesAwayDiagonal1(X, Y, Board, Piece):-
+        ((Y<2, X1 is X+3, Y1 is Y+3, isSamePiece(X1, Y1, Board, Piece))
+        ;
+        (Y =:= 2, X1 is X+2, Y1 is Y+3, isSamePiece(X1, Y1, Board, Piece))
+        ;
+        (Y =:= 3, X1 is X+1, Y1 is Y+3, isSamePiece(X1, Y1, Board, Piece))
+        ;
+        (Y > 3, Y1 is Y+3, isSamePiece(X, Y1, Board, Piece))
+        ).
+
+%falta fazer mais verificacoes de diagonais
+
+%Verifica se o jogador adversário pode ganhar
+checkPossibleWinEnemy(X, Y, Board, Name, X1, Y1):-
+        piece(Name, Piece),
+        ((checkThreePiecesAwayRight(X, Y, Board, Piece),
+                ((checkRightPiece(X, Y, Board, Piece), X1 is X+2, Y1 is Y)
+                ;
+                (checkTwoPiecesAwayRight(X, Y, Board, Piece), X1 is X+1, Y1 is Y)))
+        ;
+        (checkThreePiecesAwayLeft(X, Y, Board, Piece),
+                ((checkLeftPiece(X, Y, Board, Piece), X1 is X-2, Y1 is Y)
+                ;
+                (checkTwoPiecesAwayLeft(X, Y, Board, Piece), X1 is X-1, Y1 is Y)))
+        ).
 
 
+block(Board, Piece, Name):-
+        piece(Name, Piece).
 
 
-rand:- board(B), Name2 = 'CPU', assert(piece(Name2, w)), botTurn(_, B, Name2, Board, X, Y).
-aux:- random(0, 10, Y), write(Y).
+test:- board(B), Name2 = 'cat', assert(piece(Name2, b)), checkPossibleWin(0, 0, B, Name2, X, Y), write(X), nl, write(Y).
 
 
 /**----------------- PLAY GAME HUMAN VS HUMAN-------------------**/     
@@ -333,12 +373,10 @@ play_game_humans(Board, Name1, Name2):-
 playingHumans(Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1)), 
-
-        %verificacao de paragem        
+     
         playerTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
         (\+ stopPlaying(X1, Y1, UpdateBoard2, Name2)),
-
-        %verificacao de paragem     
+  
         playingHumans(UpdateBoard2, Name1, Name2, UpdateBoard).
 
 
@@ -352,7 +390,11 @@ play_game_human_bot(Level, Board, Name1, Name2):-
 
 playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
-        (\+ stopPlaying(X, Y, UpdateBoard1, Name1)), 
+        (\+ stopPlaying(X, Y, UpdateBoard1, Name1)),
+
+        ((checkPossibleWinEnemy(X, Y, Board, Name1, X1, Y1))
+        ;
+        generateRandomCoordinates(X1, Y1, Board_Input)),
 
         %verificacao de paragem       
         botTurn(Level, UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
@@ -364,4 +406,9 @@ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
 fim:- board(B), getPlayerName(Name1), assert(piece(Name1, b)), getPlayerName(Name2), assert(piece(Name2, w)), playing(B, Name1, Name2, Board).
 
 
-//FALTA CONDICAO DE EMPATE
+
+%PARA FAZER: 
+
+%FALTA CONDICAO DE EMPATE
+%FALTA CONDICAO DE POSSIBILIDADE DE GANHAR DO BOT
+%FALTA VERIFICACOES DE DIAGONAIS
