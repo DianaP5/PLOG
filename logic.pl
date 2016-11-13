@@ -3,6 +3,7 @@
 :-consult('utils.pl').
 :-use_module(library(lists)).
 :-use_module(library(random)).
+:-use_module(library(system)).
 
 
 isBlack(b).
@@ -110,6 +111,8 @@ checkDraw(X, Y, Board) :-
         checkDraw(X1, Y1, Board).
 
 
+/**----------------- LAST CELL -------------------**/
+
 lastFreeCell(X, 9, Board, N).
 
 lastFreeCell(X, Y, Board, N) :-
@@ -124,8 +127,6 @@ lastFreeCell(X, Y, Board, N) :-
         ;
         (X < Size-1, X1 is X+1, Y1 is Y)),
         lastFreeCell(X1, Y1, Board, N1).
-
-draw:- board(B), lastFreeCell(0, 0, B, 0), write(N).
 
 
 
@@ -246,19 +247,44 @@ movePieceToCellBot(X, Y, Board_Input, Name, Board_Output):-
         replace(Board_Input , X , Y , Piece , Board_Output).
 
         
-generateRandomCoordinates(X, Y, Board, Level):-
+generateRandomCoordinates(X, Y, Board, Level, PossibleMoves):-
         repeat,
         random(0, 9, Y),
         nth0(Y, Board, ListY),
         length(ListY, Size),
         random(0, Size, X),
-        ((Level =:= 2, isFreeCell(X, Y, Board, Cell), lastFreeCell(0, 0, Board, 0))
-        ;
-        (Level =:= 2, isFreeCell(X, Y, Board, Cell), write(X), write(Y), nl, (\+checkLostGame(X, Y, Board, Name)))
+        ((Level =:= 2, isFreeCell(X, Y, Board, Cell),
+                ((lastFreeCell(0, 0, Board, 0)) %verifica se só há uma casa disponível
+                ;
+                (\+checkLostGame(X, Y, Board, Name)) %verifica se não perde a jogar
+                /*;
+                (checkTriangle(Board, X, Y, PossibleMoves))*/
+                ))
         ;
         (Level =:= 1, isFreeCell(X, Y, Board, Cell))
         ; 
         fail), !.
+
+
+checkTriangle(Board, X, Y, PossibleMoves):-
+        Y1 is Y+3,
+        ((Y < 2, X1 is X+3)
+        ;
+        (Y =:= 2, X1 is X+2)
+        ;
+        (Y =:= 3, X1 is X+1)
+        ;
+        (Y > 3, X1 is X)),
+
+        Y2 is Y,
+        ((X2 is X+3)
+        ;
+        (X2 is X-3)),
+        isFreeCell(X1, Y1, Board, Cell),
+        isFreeCell(X2, Y2, Board, Cell),
+        PossibleMoves = [[X1, Y1], [X2, Y2]].
+
+tri:- board(B), checkTriangle(B, 0, 0, PossibleMoves), write(PossibleMoves), nl.
 
 
 checkPossibleWinTest(X, Y, Board, Name, Xfinal, Yfinal) :-
@@ -303,12 +329,7 @@ playingHumanBot(Level, Board, Name1, Name2, UpdateBoard):-
         playerTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1, Name2)),
 
-
-        ((Level =:= 2, checkPossibleWinTest(0, 0, UpdateBoard1, Name2, X1, Y1))
-        ;
-        (checkPossibleWinTest(0, 0, UpdateBoard1, Name1, X1, Y1))
-        ;
-        (generateRandomCoordinates(X1, Y1, UpdateBoard1, Level))),
+        bestOption(Level, UpdateBoard1, Name2, Name1, PossibleMoves, X1, Y1),
 
         %verificacao de paragem       
         botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
@@ -328,21 +349,15 @@ play_game_bots(Level, Board, Name1, Name2):-
 
 playingBots(Level, Board, Name1, Name2, UpdateBoard):-
 
-        ((Level =:= 2, checkPossibleWinTest(0, 0, Board, Name1, X, Y))
-        ;
-        (checkPossibleWinTest(0, 0, Board, Name2, X, Y))
-        ;
-        (generateRandomCoordinates(X, Y, Board, Level))),
+        bestOption(Level, Board, Name1, Name2, PossibleMoves1, X, Y),
 
         botTurn(Board, Name1, UpdateBoard1, X, Y), !,
         (\+ stopPlaying(X, Y, UpdateBoard1, Name1, Name2)),
 
+        %sleep(2),
+        %read(Hello),
 
-        ((Level =:= 2, checkPossibleWinTest(0, 0, UpdateBoard1, Name2, X1, Y1))
-        ;
-        (checkPossibleWinTest(0, 0, UpdateBoard1, Name1, X1, Y1))
-        ;
-        (generateRandomCoordinates(X1, Y1, UpdateBoard1, Level))),
+        bestOption(Level, UpdateBoard1, Name2, Name1, PossibleMoves2, X1, Y1),
 
         %verificacao de paragem       
         botTurn(UpdateBoard1, Name2, UpdateBoard2, X1, Y1), !,
@@ -350,3 +365,15 @@ playingBots(Level, Board, Name1, Name2, UpdateBoard):-
 
         %verificacao de paragem     
         playingBots(Level, UpdateBoard2, Name1, Name2, UpdateBoard).
+
+
+bestOption(Level, Board, Name1, Name2, PossibleMoves, X, Y):-
+        ((Level =:= 2, 
+                ((checkPossibleWinTest(0, 0, Board, Name1, X, Y)) %verifica se pode ganhar
+                ;
+                (checkPossibleWinTest(0, 0, Board, Name2, X, Y))) %verifica se o outro jogador pode ganhar
+        )
+        ;
+        (Level =:= 1, checkPossibleWinTest(0, 0, Board, Name2, X, Y)) %verifica se o outro jogador pode ganhar
+        ;
+        (generateRandomCoordinates(X, Y, Board, Level, PossibleMoves))).  %escolhe coordenadas aleatórias

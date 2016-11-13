@@ -1,7 +1,7 @@
 /*Yavalath's board*/
          
 /***************        Board Representation          ******************/
-/*board(  [[s, s, s, s, s],
+board(  [[s, s, s, s, s],
        [s, s, s, s, s, s],
       [s, s, s, s, s, s, s],
     [s, s, s, s, s, s, s, s],
@@ -9,9 +9,9 @@
     [s, s, s, s, s, s, s, s],
       [s, s, s, s, s, s, s],
         [s, s, s, s, s, s],
-          [s, s, s, s, s]]).*/
+          [s, s, s, s, s]]).
 
-          board(  [[w, w, b, w, w],
+          /*board(  [[w, w, b, w, w],
        [w, b, w, b, b, b],
       [b, w, w, b, w, w, b],
     [w, w, b, b, w, s, w, b],
@@ -19,7 +19,7 @@
     [w, w, b, w, b, b, b, w],
       [b, w, w, b, w, w, b],
         [w, b, b, w, b, w],
-          [w, w, b, b, w]]).
+          [w, w, b, b, w]]).*/
 
 
 isFree(s).
