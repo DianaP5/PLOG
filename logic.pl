@@ -151,7 +151,7 @@ checkWonGame(X, Y, Board, Name):-
         piece(Name, Piece), 
 
         /* Verify if there are four followed pieces in a row of the same type*/
-
+        (
         (checkTwoRightPieces(X, Y, Board, Piece), checkBeforeAfterPieces(X, Y, Board, Piece))
         ;
         (checkTwoLeftPieces(X, Y, Board, Piece), checkBeforeAfterPieces(X, Y, Board, Piece))
