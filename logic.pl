@@ -222,7 +222,7 @@ playerTurn(Board, Name, UpdateBoard, X, Y):-
 movePieceToCell(X, Y, Board_Input, Name, Board_Output):-
         repeat,
         getCoordinates(X, Y),
-        ((getPiece(X, Y, Board_Input, Cell), isFree(Cell))
+        ((isFreeCell(X, Y, Board_Input))
         ; 
         (write('Invalid coordinates'), nl, fail)), !,
         piece(Name, Piece),
