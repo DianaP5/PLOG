@@ -1,5 +1,5 @@
 
-:-consult('tabuleiro_hexagonal.pl').
+:-consult('board.pl').
 :-consult('dataBase.pl').
 :-consult('logic.pl').
 :-consult('utils.pl').
