@@ -64,6 +64,14 @@ testRightBoard:- board_test_4x4(Board),
         getRightList(3, 3, 1, Board, Right),
         write(Right).
 
+testTop:- board_test_4x4(Board),
+        getTopList(3, 3, Board, Top),
+        write(Top).
+
+testBottom:- board_test_4x4(Board),
+        getBottomList(3, 3, Board, Bottom),
+        write(Bottom).
+
 
 /********************************************************************************************
 *********************************************************************************************
@@ -90,7 +98,7 @@ getLeftList(X, Y, N, Board, [_|List]):-
         N1 is N+1,
         getLeftList(X, N1, Row, List).
 
-getLeftList(X, Y, N, Row, [])     :- [].
+getLeftList(X, Y, N, Board, [])     :- [].
 
 getLeftList(X, N, Row, [_|List]):-
         Position is X - N,
@@ -114,7 +122,7 @@ getRightList(X, Y, N, Board, [_|List]):-
         N1 is N+1,
         getRightList(X, N1, Row, List).
 
-getRightList(X, Y, N, Row, [])     :- [].
+getRightList(X, Y, N, Board, [])     :- [].
 
 getRightList(X, N, Row, [_|List]):-
         Position is X + N,
@@ -126,6 +134,36 @@ getRightList(X, N, Row, [_|List]):-
         getRightList(X, N1, Row, List).
 
 getRightList(X, N, Row, [])     :- [].
+
+
+%get top list
+getTopList(X, Y, Board, [_|List]):-
+        Position is Y - 1,
+        Position >= 0,
+        getRow(Position, Board, Row),
+        nth0(X, Row, Elem),
+        isUndefined(Elem),
+        Y1 is Y - 1,
+        getTopList(X, Y1, Board, List).
+
+getTopList(X, Y, Board, [])     :- [].
+
+
+%get bottom list
+getBottomList(X, Y, Board, [_|List]):-
+        Position is Y + 1,
+        length(Board, Size),
+        Position < Size,
+        getRow(Position, Board, Row),
+        nth0(X, Row, Elem),
+        isUndefined(Elem),
+        Y1 is Y + 1,
+        getBottomList(X, Y1, Board, List).
+
+getBottomList(X, Y, Board, [])     :- [].
+
+
+
 
 
 /*
