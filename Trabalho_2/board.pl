@@ -52,7 +52,7 @@ testRow:- X = [[   ?, p(2),    ?,    ?],
         write(Row).
 
 testLeft:- board_test_4x4(Board),
-        getLeftList(0, 3, 1, Board, Left),
+        getLeftList(3, 3, Board, Left),
         write(Left).
 
 
@@ -89,26 +89,26 @@ getRow(Y, Board, Row):-
         nth0(Y, Board, Row).
 
 %get left list
-getLeftList(X, Y, N, Board, [_|List]):-
+getLeftList(X, Y, Board, [_|List]):-
         getRow(Y, Board, Row),
-        Position is X - N,
+        Position is X - 1,
         Position >= 0,
         nth0(Position, Row, Elem),
         isUndefined(Elem),
-        N1 is N+1,
-        getLeftList(X, N1, Row, List).
+        X1 is X-1,
+        getLeftList(X1, Row, List).
 
-getLeftList(X, Y, N, Board, [])     :- [].
+getLeftList(X, Y, Board, [])     :- [].
 
-getLeftList(X, N, Row, [_|List]):-
-        Position is X - N,
+getLeftList(X, Row, [_|List]):-
+        Position is X - 1,
         Position >= 0,
         nth0(Position, Row, Elem),
         isUndefined(Elem),
-        N1 is N+1,
-        getLeftList(X, N1, Row, List).
+        X1 is X-1,
+        getLeftList(X1, Row, List).
 
-getLeftList(X, N, Row, [])     :- [].
+getLeftList(X, Row, [])     :- [].
 
 
 %get right list
