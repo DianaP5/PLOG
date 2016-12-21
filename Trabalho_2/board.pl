@@ -43,14 +43,27 @@ test:-
         nth0(3, X, p(Elem)),
         write(Elem),
         isDefined(Elem).
-        
-testLeft:- X = [p(4),?,?,?,p(2),?,?,p(4),?,?,p(2),?],
-        getLeftList(7, 1, X, Left),
+
+testRow:- X = [[   ?, p(2),    ?,    ?],
+                [   ?,    ?, p(2),    ?],
+                [   ?, p(0),    ?,    ?],
+                [p(5),    ?,    ?, p(4)]],
+        getRow(3, X, Row),
+        write(Row).
+
+testLeft:- board_test_4x4(Board),
+        getLeftList(0, 3, 1, Board, Left),
         write(Left).
 
-testRight:- X = [p(4),?,?,?,p(2),?,?,p(4),?,?,p(2),?],
-        getRightList(0, 1, X, Right),
+
+testRight:- X = [   ?, p(2),    ?,    ?],
+        getRightList(1, 1, X, Right),
         write(Right).
+
+testRightBoard:- board_test_4x4(Board),
+        getRightList(3, 3, 1, Board, Right),
+        write(Right).
+
 
 /********************************************************************************************
 *********************************************************************************************
@@ -63,8 +76,22 @@ isUndefined(Elem):-
 
 isDefined(Elem):-
         Elem \= '?'.
+        
+getRow(Y, Board, Row):-
+        nth0(Y, Board, Row).
 
 %get left list
+getLeftList(X, Y, N, Board, [_|List]):-
+        getRow(Y, Board, Row),
+        Position is X - N,
+        Position >= 0,
+        nth0(Position, Row, Elem),
+        isUndefined(Elem),
+        N1 is N+1,
+        getLeftList(X, N1, Row, List).
+
+getLeftList(X, Y, N, Row, [])     :- [].
+
 getLeftList(X, N, Row, [_|List]):-
         Position is X - N,
         Position >= 0,
@@ -77,11 +104,22 @@ getLeftList(X, N, Row, [])     :- [].
 
 
 %get right list
+getRightList(X, Y, N, Board, [_|List]):-
+        getRow(Y, Board, Row),
+        Position is X + N,
+        length(Row, Size),
+        Position < Size,
+        nth0(Position, Row, Elem),
+        isUndefined(Elem),
+        N1 is N+1,
+        getRightList(X, N1, Row, List).
+
+getRightList(X, Y, N, Row, [])     :- [].
+
 getRightList(X, N, Row, [_|List]):-
         Position is X + N,
         length(Row, Size),
         Position < Size ,
-        write(Position),
         nth0(Position, Row, Elem),
         isUndefined(Elem),
         N1 is N+1,
