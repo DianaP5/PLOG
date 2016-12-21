@@ -55,13 +55,8 @@ testLeft:- board_test_4x4(Board),
         getLeftList(3, 3, Board, Left),
         write(Left).
 
-
-testRight:- X = [   ?, p(2),    ?,    ?],
-        getRightList(1, 1, X, Right),
-        write(Right).
-
-testRightBoard:- board_test_4x4(Board),
-        getRightList(3, 3, 1, Board, Right),
+testRight:- board_test_4x4(Board),
+        getRightList(3, 3, Board, Right),
         write(Right).
 
 testTop:- board_test_4x4(Board),
@@ -71,6 +66,14 @@ testTop:- board_test_4x4(Board),
 testBottom:- board_test_4x4(Board),
         getBottomList(3, 3, Board, Bottom),
         write(Bottom).
+
+testAllListsCell:-board_test_4x4(Board),
+        getAllListsCell(1, 2, Board, Lists),
+        write(Lists).
+
+testAllListsBoard:- board_test_4x4(Board),
+        getAllListsBoard(0, 0, Board, List),
+        write(List).
 
 
 /********************************************************************************************
@@ -87,6 +90,15 @@ isDefined(Elem):-
         
 getRow(Y, Board, Row):-
         nth0(Y, Board, Row).
+
+getDefinedElement(X, Y, Board, Elem):-
+        getRow(Y, Board, Row),
+        nth0(X, Row, p(Elem)).
+
+getUndefinedElement(X, Y, Board, Elem):-
+        getRow(Y, Board, Row),
+        nth0(X, Row, Elem),
+        isUndefined(Elem).
 
 %get left list
 getLeftList(X, Y, Board, [_|List]):-
@@ -112,28 +124,28 @@ getLeftList(X, Row, [])     :- [].
 
 
 %get right list
-getRightList(X, Y, N, Board, [_|List]):-
+getRightList(X, Y, Board, [_|List]):-
         getRow(Y, Board, Row),
-        Position is X + N,
+        Position is X + 1,
         length(Row, Size),
         Position < Size,
         nth0(Position, Row, Elem),
         isUndefined(Elem),
-        N1 is N+1,
-        getRightList(X, N1, Row, List).
+        X1 is X+1,
+        getRightList(X1, Row, List).
 
-getRightList(X, Y, N, Board, [])     :- [].
+getRightList(X, Y, Board, [])     :- [].
 
-getRightList(X, N, Row, [_|List]):-
-        Position is X + N,
+getRightList(X, Row, [_|List]):-
+        Position is X + 1,
         length(Row, Size),
         Position < Size ,
         nth0(Position, Row, Elem),
         isUndefined(Elem),
-        N1 is N+1,
-        getRightList(X, N1, Row, List).
+        X1 is X+1,
+        getRightList(X1, Row, List).
 
-getRightList(X, N, Row, [])     :- [].
+getRightList(X, Row, [])     :- [].
 
 
 %get top list
@@ -163,6 +175,65 @@ getBottomList(X, Y, Board, [_|List]):-
 getBottomList(X, Y, Board, [])     :- [].
 
 
+%get all possible lists of a cell
+getAllListsCell(X, Y, Board, List):-
+        getDefinedElement(X, Y, Board, Elem),
+        getLeftList(X, Y, Board, Left),
+        getRightList(X, Y, Board, Right),
+        getTopList(X, Y, Board, Top),
+        getBottomList(X, Y, Board, Bottom),
+        List = [Left, Right, Elem, Top, Bottom].
+
+
+%case when Element is UNDEFINED
+
+%case when x and y are both less than BoardSize
+getAllListsBoard(X, Y, Board, List):-
+        length(Board, BoardSize),
+        Y < BoardSize,
+        X < BoardSize,
+        getUndefinedElement(X, Y, Board, Elem),
+        X1 is X + 1,
+        getAllListsBoard(X1, Y, Board, List).
+
+%case when x is equal to BoardSize 
+getAllListsBoard(X, Y, Board, List):-
+        length(Board, BoardSize),
+        X is BoardSize,
+        X1 is 0,
+        Y1 is Y+1,
+        Y1 < BoardSize,
+        getUndefinedElement(X1, Y1, Board, Elem),
+        X2 is X1 + 1,
+        getAllListsBoard(X2, Y1, Board, List).
+
+%case when Element is DEFINED
+
+%case when x and y are both less than BoardSize
+getAllListsBoard(X, Y, Board, [H|List]):-
+        length(Board, BoardSize),
+        Y < BoardSize,
+        X < BoardSize,
+        getDefinedElement(X, Y, Board, Elem),
+        getAllListsCell(X, Y, Board, ListsCell),
+        H = ListsCell,
+        X1 is X + 1,
+        getAllListsBoard(X1, Y, Board, List).
+
+%case when x is equal to BoardSize 
+getAllListsBoard(X, Y, Board, [H|List]):-
+        length(Board, BoardSize),
+        X is BoardSize,
+        X1 is 0,
+        Y1 is Y+1,
+        Y1 < BoardSize,
+        getDefinedElement(X1, Y1, Board, Elem),
+        getAllListsCell(X1, Y1, Board, ListsCell),
+        H = ListsCell,
+        X2 is X1 + 1,
+        getAllListsBoard(X2, Y1, Board, List).
+
+getAllListsBoard(X, Y, Board, []):- [].
 
 
 
