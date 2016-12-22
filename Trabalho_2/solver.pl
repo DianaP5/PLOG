@@ -43,6 +43,13 @@ testAll:- board_test_4x4(Board),
 
 
 %predicates
+isDefinedElement(X, Y, Board):-
+        getElem(X, Y, Board, Elem),
+        integer(Elem).
+
+isUndefinedElement(X, Y, Board):-
+        getElem(X, Y, Board, Elem),
+        var(Elem).
         
 getRow(Y, Board, Row):-
         nth0(Y, Board, Row).
@@ -77,7 +84,7 @@ getLeftList(X, Y, Board, [Elem|List]):-
         X1 is X-1,
         getLeftList(X1, Row, List).
 
-getLeftList(X, Y, Board, [])     :- [].
+getLeftList(_, _, _, [])     :- [].
 
 getLeftList(X, Row, [Elem|List]):-
         Position is X - 1,
@@ -86,7 +93,7 @@ getLeftList(X, Row, [Elem|List]):-
         X1 is X-1,
         getLeftList(X1, Row, List).
 
-getLeftList(X, Row, [])     :- [].
+getLeftList(_, _, [])     :- [].
 
 
 %get right list
@@ -99,7 +106,7 @@ getRightList(X, Y, Board, [Elem|List]):-
         X1 is X+1,
         getRightList(X1, Row, List).
 
-getRightList(X, Y, Board, [])     :- [].
+getRightList(_, _, _, [])     :- [].
 
 getRightList(X, Row, [Elem|List]):-
         Position is X + 1,
@@ -109,7 +116,7 @@ getRightList(X, Row, [Elem|List]):-
         X1 is X+1,
         getRightList(X1, Row, List).
 
-getRightList(X, Row, [])     :- [].
+getRightList(_, _, [])     :- [].
 
 
 %get top list
@@ -122,7 +129,7 @@ getTopList(X, Y, Board, [Elem|List]):-
         Y1 is Y - 1,
         getTopList(X, Y1, Board, List).
 
-getTopList(X, Y, Board, [])     :- [].
+getTopList(_, _, _, [])     :- [].
 
 
 %get bottom list
@@ -135,72 +142,72 @@ getBottomList(X, Y, Board, [Elem|List]):-
         Y1 is Y + 1,
         getBottomList(X, Y1, Board, List).
 
-getBottomList(X, Y, Board, [])     :- [].
-
+getBottomList(_, _, _, [])     :- [].
 
 %get all possible lists of a cell
-getAllListsCell(X, Y, Board, List):-
+getAllListsCell(X, Y, Board, List, ListAux):-
         getDefinedElement(X, Y, Board, Elem),
         getLeftList(X, Y, Board, Left),
         getRightList(X, Y, Board, Right),
         getTopList(X, Y, Board, Top),
         getBottomList(X, Y, Board, Bottom),
-        List = [Left, Right, Elem, Top, Bottom].
+        List = [Left, Right, Elem, Top, Bottom], 
+        ListAux = [Left, Right, Top, Bottom].
 
 
 %case when Element is UNDEFINED
 
 %case when x and y are both less than BoardSize
-getAllListsBoard(X, Y, Board, List):-
+getAllListsBoard(X, Y, Board, List, ListAux):-
         length(Board, BoardSize),
         Y < BoardSize,
         X < BoardSize,
-        getUndefinedElement(X, Y, Board, Elem),
+        isUndefinedElement(X, Y, Board),
         X1 is X + 1,
-        getAllListsBoard(X1, Y, Board, List).
+        getAllListsBoard(X1, Y, Board, List, ListAux).
 
 %case when x is equal to BoardSize 
-getAllListsBoard(X, Y, Board, List):-
+getAllListsBoard(X, Y, Board, List, ListAux):-
         length(Board, BoardSize),
         X is BoardSize,
         X1 is 0,
         Y1 is Y+1,
         Y1 < BoardSize,
-        getUndefinedElement(X1, Y1, Board, Elem),
+        isUndefinedElement(X1, Y1, Board),
         X2 is X1 + 1,
-        getAllListsBoard(X2, Y1, Board, List).
+        getAllListsBoard(X2, Y1, Board, List, ListAux).
+
 
 %case when Element is DEFINED
 
 %case when x and y are both less than BoardSize
-getAllListsBoard(X, Y, Board, [H|List]):-
+getAllListsBoard(X, Y, Board, [H|List], [H2|ListAux]):-
         length(Board, BoardSize),
         Y < BoardSize,
         X < BoardSize,
-        getDefinedElement(X, Y, Board, Elem),
-        getAllListsCell(X, Y, Board, ListsCell),
-        H = ListsCell,
+        isDefinedElement(X, Y, Board),
+        getAllListsCell(X, Y, Board, H, H2),
         X1 is X + 1,
-        getAllListsBoard(X1, Y, Board, List).
+        getAllListsBoard(X1, Y, Board, List, ListAux).
+
+
 
 %case when x is equal to BoardSize 
-getAllListsBoard(X, Y, Board, [H|List]):-
+getAllListsBoard(X, Y, Board, [H|List], [H2|ListAux]):-
         length(Board, BoardSize),
         X is BoardSize,
         X1 is 0,
         Y1 is Y+1,
         Y1 < BoardSize,
-        getDefinedElement(X1, Y1, Board, Elem),
-        getAllListsCell(X1, Y1, Board, ListsCell),
-        H = ListsCell,
+        isDefinedElement(X1, Y1, Board),
+        getAllListsCell(X1, Y1, Board, H, H2),
         X2 is X1 + 1,
-        getAllListsBoard(X2, Y1, Board, List).
+        getAllListsBoard(X2, Y1, Board, List, ListAux).
 
-getAllListsBoard(X, Y, Board, []):- [].
+getAllListsBoard(_, _, _, [], _):- [].
 
 
-
-count:-countConsecutiveHorizontal([0, 1, 1, 0, 1, 0, 1, 1], N, 0), write(N).
+%count consecutive cells
 
 countConsecutiveHorizontal([], N, N).
 countConsecutiveHorizontal([0|_], N, N).
@@ -216,6 +223,14 @@ countConsecutiveVertical([H|List], N, Aux):-
         H is 0, 
         NAux is Aux+1,
         countConsecutiveVertical(List, N, NAux).
+
+
+%extracting variables
+
+variables(InputList, OutputList):-
+        append(InputList, AuxList),
+        append(AuxList, OutputList).
+
 
 %posting constraints
 
@@ -233,23 +248,6 @@ constraints([[Left, Right, Pivot, Top, Bottom]|Rest]) :-
         constraints(Rest).
 
 
-%extracting the variables
-variables([]) :- [].
-variables([[Left, Right, _, Top, Bottom]|Rest]) :-
-        write(Left), nl, 
-        write(Right), nl,
-        write(Top), nl, 
-        write(Bottom), nl,
-        seq(Left),
-        seq(Right),
-        seq(Top),
-        seq(Bottom),
-        variables(Rest).
-
-seq([]) :- [].
-seq([L|Ls]) :- [L], seq(Ls).
-
-
 %test
 
 test_board:- board_test_6x6(Board),
@@ -261,3 +259,14 @@ test_board:- board_test_6x6(Board),
         write(List), nl, write(Vs).
 
 
+test:- board_test_4x4(Board),
+        getAllListsBoard(0, 0, Board, Ls, LAux),
+        constraints(Ls),
+        variables(LAux, Vs), 
+        labeling([], Vs), write(Ls).
+
+test2:- 
+        board_test_4x4(Board),
+        getAllListsBoard(0, 0, Board, Ls, LAux), write(LAux),nl,
+        variables(LAux, OutputList), 
+        labeling([], OutputList), write(Ls).
