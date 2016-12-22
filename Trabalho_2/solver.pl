@@ -1,6 +1,8 @@
 :- use_module(library(clpfd)).
 :- use_module(library(lists)).
 
+
+%tirar daqui
 %Representation of board 
 
 board_test_4x4([[ A1,  2, A3, A4],
@@ -8,6 +10,12 @@ board_test_4x4([[ A1,  2, A3, A4],
                 [ C1,  0, C3, C4],
                 [  5, D2, D3,  4]]).
 
+board_test_6x6([[ A1, A2,  4, A4, A5,  1],
+                [ B1,  2, B3, B4, B5, B6],
+                [  3, C2, C3,  1, C5, C6],
+                [ D1, D2,  1, D4, D5,  2],
+                [ E1, E2, E3, E4,  2, E6],
+                [  2, F2, F3,  3, F5, F6]]).
 
 %Tests
 
@@ -227,7 +235,11 @@ constraints([[Left, Right, Pivot, Top, Bottom]|Rest]) :-
 
 %extracting the variables
 variables([]) :- [].
-variables([Left, Right,_,Top, Bottom|Rest]) :-
+variables([[Left, Right, _, Top, Bottom]|Rest]) :-
+        write(Left), nl, 
+        write(Right), nl,
+        write(Top), nl, 
+        write(Bottom), nl,
         seq(Left),
         seq(Right),
         seq(Top),
@@ -240,16 +252,12 @@ seq([L|Ls]) :- [L], seq(Ls).
 
 %test
 
-test_board:- board_test_4x4(Board),
+test_board:- board_test_6x6(Board),
         getAllListsBoard(0, 0, Board, List),
         constraints(List),
+        write(List),
         phrase(variables(List), Vs),
         labeling([], Vs),
         write(List), nl, write(Vs).
 
-test(example(Es)):- 
-   phrase(is_p_is(Ls), Es),
-   constraints(Ls),
-   phrase(variables(Ls), Vs),
-   labeling([], Vs), 
-   write(Es), nl, write(Ls), nl, write(Vs).
+
