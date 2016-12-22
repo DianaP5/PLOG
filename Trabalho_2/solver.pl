@@ -29,10 +29,8 @@ testBottom:- board_test_4x4(Board),
         write(Bottom).
 
 testAll:- board_test_4x4(Board),
-        getAllListsCell(1, 0, Board, List1),
-        write(List1), nl,
-        getAllListsCell(1, 2, Board, List2),
-        write(List2).
+        getAllListsBoard(0, 0, Board, List),
+        write(List).
 
 
 
@@ -62,29 +60,25 @@ getUndefinedElement(X, Row, Elem):-
         var(Elem).
 
 %get left list
-getLeftList(X, Y, Board, List):-
-        getLeftListAux(X, Y, Board, LeftAux),
-        reverse(LeftAux, List).
 
-getLeftListAux(X, Y, Board, [Elem|List]):-
+getLeftList(X, Y, Board, [Elem|List]):-
         getRow(Y, Board, Row),
         Position is X - 1,
         Position >= 0,
         getUndefinedElement(Position, Row, Elem),
-        write(Elem), nl,
         X1 is X-1,
-        getLeftListAux(X1, Row, List).
+        getLeftList(X1, Row, List).
 
-getLeftListAux(X, Y, Board, [])     :- [].
+getLeftList(X, Y, Board, [])     :- [].
 
-getLeftListAux(X, Row, [Elem|List]):-
+getLeftList(X, Row, [Elem|List]):-
         Position is X - 1,
         Position >= 0,
         getUndefinedElement(Position, Row, Elem),
         X1 is X-1,
-        getLeftListAux(X1, Row, List).
+        getLeftList(X1, Row, List).
 
-getLeftListAux(X, Row, [])     :- [].
+getLeftList(X, Row, [])     :- [].
 
 
 %get right list
@@ -111,19 +105,16 @@ getRightList(X, Row, [])     :- [].
 
 
 %get top list
-getTopList(X, Y, Board, List):-
-        getTopListAux(X, Y, Board, ListAux),
-        reverse(ListAux, List).
 
-getTopListAux(X, Y, Board, [Elem|List]):-
+getTopList(X, Y, Board, [Elem|List]):-
         Position is Y - 1,
         Position >= 0,
         getRow(Position, Board, Row),
         getUndefinedElement(X, Row, Elem),
         Y1 is Y - 1,
-        getTopListAux(X, Y1, Board, List).
+        getTopList(X, Y1, Board, List).
 
-getTopListAux(X, Y, Board, [])     :- [].
+getTopList(X, Y, Board, [])     :- [].
 
 
 %get bottom list
@@ -198,3 +189,67 @@ getAllListsBoard(X, Y, Board, [H|List]):-
         getAllListsBoard(X2, Y1, Board, List).
 
 getAllListsBoard(X, Y, Board, []):- [].
+
+
+
+count:-countConsecutiveHorizontal([0, 1, 1, 0, 1, 0, 1, 1], N, 0), write(N).
+
+countConsecutiveHorizontal([], N, N).
+countConsecutiveHorizontal([0|_], N, N).
+countConsecutiveHorizontal([H|List], N, Aux):-
+        H is 1, 
+        NAux is Aux+1,
+        countConsecutiveHorizontal(List, N, NAux).
+
+
+countConsecutiveVertical([], N, N).
+countConsecutiveVertical([1|_], N, N).
+countConsecutiveVertical([H|List], N, Aux):-
+        H is 0, 
+        NAux is Aux+1,
+        countConsecutiveVertical(List, N, NAux).
+
+%posting constraints
+
+constraints([]).
+constraints([[Left, Right, Pivot, Top, Bottom]|Rest]) :-
+        domain(Left, 0, 1),
+        domain(Right, 0, 1),
+        domain(Top, 0, 1),
+        domain(Bottom, 0, 1),
+        countConsecutiveHorizontal(Left, CountLeft, 0),
+        countConsecutiveHorizontal(Right, CountRight, 0),
+        countConsecutiveVertical(Top, CountTop, 0),
+        countConsecutiveVertical(Bottom, CountBottom, 0),
+        Pivot #= CountLeft + CountRight + CountTop + CountBottom,
+        constraints(Rest).
+
+
+%extracting the variables
+variables([]) :- [].
+variables([Left, Right,_,Top, Bottom|Rest]) :-
+        seq(Left),
+        seq(Right),
+        seq(Top),
+        seq(Bottom),
+        variables(Rest).
+
+seq([]) :- [].
+seq([L|Ls]) :- [L], seq(Ls).
+
+
+%test
+
+test_board:- board_test_4x4(Board),
+        getAllListsBoard(0, 0, Board, List),
+        constraints(List),
+        phrase(variables(List), Vs),
+        labeling([], Vs),
+        write(List), nl, write(Vs).
+
+test(example(Es)):- 
+   phrase(is_p_is(Ls), Es),
+   constraints(Ls),
+   phrase(variables(Ls), Vs),
+   labeling([], Vs), 
+   write(Es), nl, write(Ls), nl, write(Vs).
