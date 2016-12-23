@@ -16,9 +16,8 @@ start:- nl,
 	write('|   3. Solve 5x5                 |'), nl,
 	write('|   4. Solve 6x6                 |'), nl,
 	write('|   5. Solve 7x7                 |'), nl,
-	write('|   6. Solve 10x10               |'), nl,
 	write('|                                |'), nl,
-	write('|   9. Exit                      |'), nl,
+	write('|   6. Exit                      |'), nl,
 	write('|                                |'), nl,
 	write('+================================+'), nl, nl,
 	write('Please choose an option:'), nl,
@@ -37,19 +36,16 @@ mainMenuAction(2):- staticPuzzle4x4.
 mainMenuAction(3):- staticPuzzle5x5.
 mainMenuAction(4):- staticPuzzle6x6.
 mainMenuAction(5):- staticPuzzle7x7.
-mainMenuAction(6):- staticPuzzle10x10.
-mainMenuAction(8):- aboutMenu, !, start.
-mainMenuAction(9).
+mainMenuAction(6).
 mainMenuAction(_):- !, start.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 startSolver(Board):-
 	printBoard(Board),
-	solve(Board, ListNumbers), !, 
+	solve(Board, ListNumbers),
 	printResultBoard(Board, ListNumbers),
 	pressEnterToContinue.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -61,49 +57,26 @@ staticPuzzle4x4:-
 	board_test_4x4(Board),
  	startSolver(Board).
 
+staticPuzzle5x5:-
+	board_test_5x5(Board),
+ 	startSolver(Board).
+
 staticPuzzle6x6:-
 	board_test_6x6(Board),
  	startSolver(Board).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+staticPuzzle7x7:-
+	board_test_7x7(Board),
+ 	startSolver(Board).
 
-startSolver(Blacks, Whites):-
-	length(Blacks, BlackLength),
-	length(Whites, WhiteLength),
-	generateEmptyMatrix(Board, BlackLength, WhiteLength),
-	printBoard(Board, Blacks, Whites),
-	pressEnterToContinue.
-	
-startSolver(_,_):-
-	write('\nERROR: could not find any suitable solution for the given problem!'), nl,
-	pressEnterToContinue, nl, fail.
-	
-startSolver4x4(Blacks, Whites):-
-	length(Blacks, BlackLength),
-	length(Whites, WhiteLength),
-	generateEmptyMatrix(Board, 4, 4),
-	printBoard(Board, Blacks, Whites),
-	pressEnterToContinue.
-	
-startSolver4x4(_,_):-
-	write('\nERROR: could not find any suitable solution for the given problem!'), nl,
-	pressEnterToContinue, nl, fail.
+staticPuzzle8x8:-
+	board_test_8x8(Board),
+ 	startSolver(Board).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 pressEnterToContinue:-
 	write('Press <Enter> to continue...'), nl,
 	start, !.
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-generateEmptyMatrix([], _, 0).
-generateEmptyMatrix([H|T], Width, Height):-
-	Height > 0,
-	generateEmptyRow(H, Width),
-	RemainingHeight is Height - 1,
-	generateEmptyMatrix(T, Width, RemainingHeight), !.
-
-generateEmptyRow([], 0).
-generateEmptyRow([0|T],Width):-
-	Width > 0,
-	RemainingWidth is Width - 1,
-	generateEmptyRow(T, RemainingWidth), !.

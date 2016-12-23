@@ -288,7 +288,6 @@ constraints([[Left, Right, Pivot, Top, Bottom]|Rest]) :-
         constraints(Rest).
 
 /*********************************************************************************************************/
-:- include('wallsTestBoards.pl').
 %solve puzzle
 solve(Board, ListNumbers):-
 
@@ -299,10 +298,12 @@ solve(Board, ListNumbers):-
         %initiate statistics
 	statistics(walltime, _),
 
-        labeling([], Vs),
-
+        labeling([ff], Vs),
         %Obtain and print statistics
+
 	statistics(walltime, [_, ElapsedTime | _]),
-        format('An answer has been found!~nElapsed time: ~3d seconds', ElapsedTime), nl.
+
+        format('An answer has been found!~nElapsed time: ~5d seconds', ElapsedTime), nl.
 
 /*********************************************************************************************************/
+
