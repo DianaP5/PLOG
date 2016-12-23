@@ -5,10 +5,10 @@ printBoard(Board):-
     printBoardAux(Board, N),
     nl, !.
 
-printResultBoard(Board, Result, S):-
+printResultBoard(Board, ListNumbers):-
     length(Board, N),
     printSeparator(N),
-    %printBoard(Board, 1, N, Result, S),
+    printBoardSolvedAux(Board, 0, N, ListNumbers),
     nl, !.
 
 
@@ -29,8 +29,24 @@ printBoardAux([Row|Board], N):-
     printSeparator(N),
     printBoardAux(Board, N).
 
+
+%print board solved
+printBoardSolvedAux([], _, _, _).
+
+printBoardSolvedAux([Row|Board], Y, N, ListNumbers):-
+    write('    |'),
+    createSeparator(N, '       |'), nl,
+    write('    |'),
+    printRowSolved(Row, 0, Y, ListNumbers, ListNumbers2), nl,!,
+    write('    |'),
+    createSeparator(N, '       |'), nl,
+    printSeparator(N),
+    Y1 is Y+1,
+    printBoardSolvedAux(Board, Y1, N, ListNumbers2).
+
 /*********************************************************************************************************/
 
+%print empty row
 printRow([]).
 
 printRow([H|Row]):-
@@ -45,6 +61,37 @@ printRow([H|Row]):-
     write('       |'),
     printRow(Row).
 
+%print solved row
+printRowSolved([], _, _, ListNumbers, ListNumbers).
+
+printRowSolved([H|Row], PosX, PosY, [[X, Y]|ListNumbers], ListNumbers2):-
+    PosY == Y,
+    PosX == X,  
+    write('   '),
+    write(H),
+    write('   |'),
+    PosX1 is PosX+1,
+    printRowSolved(Row, PosX1, PosY, ListNumbers, ListNumbers2).
+
+
+printRowSolved([H|Row], PosX, PosY, ListNumbers, ListNumbers2):-
+    piece(H, Char),
+    write('  '),
+    write(Char),
+    write('  |'),
+    PosX1 is PosX+1,
+    printRowSolved(Row, PosX1, PosY, ListNumbers, ListNumbers2).
+
+printRowSolved([H|Row], PosX, PosY, ListNumbers, ListNumbers2):-
+    
+    write('   '),
+    write(H),
+    write('   |'),
+    PosX1 is PosX+1,
+    printRowSolved(Row, PosX1, PosY, ListNumbers, ListNumbers2).
+
+
+
 /*********************************************************************************************************/
 
 createSeparator(0, _).
@@ -56,5 +103,7 @@ createSeparator(N, SS):-
 
 /*********************************************************************************************************/
 
+piece(1, '---').
+piece(0, ' | ').
 
 /*********************************************************************************************************/
