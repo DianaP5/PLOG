@@ -291,34 +291,18 @@ constraints([[Left, Right, Pivot, Top, Bottom]|Rest]) :-
 :- include('wallsTestBoards.pl').
 %solve puzzle
 solve(Board, ListNumbers):-
+
         getAllListsBoard(0, 0, Board, Ls, LAux, ListNumbers),
         constraints(Ls),
         variables(LAux, Vs), 
-        labeling([], Vs).
 
-%test
+        %initiate statistics
+	statistics(walltime, _),
 
-test4:-
-	board_test_4x4(Board),
-	solve(Board), write(Board).
-
-test_board:- board_test_6x6(Board),
-        getAllListsBoard(0, 0, Board, List),
-        constraints(List),
-        write(List),
-        phrase(variables(List), Vs),
         labeling([], Vs),
-        write(List), write(Board),nl, write(Vs).
 
+        %Obtain and print statistics
+	statistics(walltime, [_, ElapsedTime | _]),
+        format('An answer has been found!~nElapsed time: ~3d seconds', ElapsedTime), nl.
 
-test:- board_test_4x4(Board),
-        getAllListsBoard(0, 0, Board, Ls, LAux),
-        constraints(Ls),
-        variables(LAux, Vs), 
-        labeling([], Vs), write(Ls), nl, write(Board).
-
-test2:- 
-        board_test_4x4(Board),
-        getAllListsBoard(0, 0, Board, Ls, LAux), write(LAux),nl,
-        variables(LAux, OutputList), 
-        labeling([], OutputList), write(Ls).
+/*********************************************************************************************************/

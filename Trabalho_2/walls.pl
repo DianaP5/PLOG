@@ -1,4 +1,6 @@
-:- ensure_loaded('displayTab.pl').
+:- include('wallsTestBoards.pl').
+:- include('solver.pl').
+:- include('printer.pl').
 
 walls:-
 	%initializeRandomSeed, !,
@@ -42,15 +44,26 @@ mainMenuAction(_):- !, start.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+startSolver(Board):-
+	printBoard(Board),
+	solve(Board, ListNumbers), !, 
+	printResultBoard(Board, ListNumbers),
+	pressEnterToContinue.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 staticPuzzle3x3:-
-	Blacks = [[1,1],[1],[1]],
-	Whites = [[1],[1],[1]],
-	startSolver(Blacks, Whites), !.
+	board_test_3x3(Board),
+ 	startSolver(Board).
 	
 staticPuzzle4x4:-
-	Blacks = [[2],[1],[2],[3]],
-	Whites = [[1],[2],[1],[1]],
-	startSolver(Blacks, Whites), !.
+	board_test_4x4(Board),
+ 	startSolver(Board).
+
+staticPuzzle6x6:-
+	board_test_6x6(Board),
+ 	startSolver(Board).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -78,7 +91,7 @@ startSolver4x4(_,_):-
 
 pressEnterToContinue:-
 	write('Press <Enter> to continue...'), nl,
-	get_code(_), !.
+	start, !.
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

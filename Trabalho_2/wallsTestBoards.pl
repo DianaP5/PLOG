@@ -1,8 +1,12 @@
 %Representation of board 
 
+board_test_3x3([[ A1,  3, A3],
+                [ B1, B2,  2],
+                [ 1,  C2, C3]]).
+
 board_test_4x4([[ A1,  2, A3, A4],
                 [ B1, B2,  2, B4],
-                [ C1,  0, C3, C4],
+                [ C1,  1, C3, C4],
                 [  5, D2, D3,  4]]).
 
 board_test_6x6([[ A1, A2,  4, A4, A5,  1],
