@@ -64,6 +64,12 @@ printRow([H|Row]):-
 %print solved row
 printRowSolved([], _, _, ListNumbers, ListNumbers).
 
+printRowSolved([H|Row], PosX, PosY, ListNumbers, ListNumbers2):-
+    (\+integer(H)),
+    write('       |'),
+    PosX1 is PosX+1,
+    printRowSolved(Row, PosX1, PosY, ListNumbers, ListNumbers2).
+
 printRowSolved([H|Row], PosX, PosY, [[X, Y]|ListNumbers], ListNumbers2):-
     PosY == Y,
     PosX == X,  
